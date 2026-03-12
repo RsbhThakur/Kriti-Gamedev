@@ -100,7 +100,7 @@ func _apply_ui_layout() -> void:
 
 	var min_dim = min(viewport_size.x, viewport_size.y)
 	var joy_size = clamp(min_dim * 0.24, 190.0, 280.0)
-	var joy_margin = clamp(min_dim * 0.07, 40.0, 90.0)
+	var joy_margin = clamp(min_dim * 0.16, 100.0, 180.0)
 
 	move_joystick.anchor_left = 0.0
 	move_joystick.anchor_right = 0.0
