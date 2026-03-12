@@ -11,7 +11,7 @@ extends Node2D
 
 const HOME_SCENE := "res://node_2d.tscn"
 const SMALL_SPAWN_RATE_MULTIPLIER := 1.4
-const BIG_SPAWN_RATE_MULTIPLIER := 1.2
+const BIG_SPAWN_RATE_MULTIPLIER := 1.4
 
 var health := 100
 var lives := 3
