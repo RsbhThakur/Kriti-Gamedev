@@ -298,13 +298,13 @@ func _build_newmap() -> void:
 	# Grab reference to the TileMap for tile-based wall checks
 	wall_tilemap = map_instance.get_node("TileMap")
 
-	# The TileMap in newmap is at position (-278, -703) with scale (4,4)
+	# The TileMap in newmap is at position (7034, 2883) with scale (4,4)
 	# Tile size is 16x16. The enclosed walled area is:
 	#   Left wall column X=14, Right wall column X=43 (vertical walls, source 6)
 	#   Top wall row Y=7, Bottom wall row Y=33 (horizontal walls, source 1)
 	# Playable interior: tiles X=15..42, Y=8..32
 	# World coord = tilemap_pos + tile_coord * tile_size * scale
-	var tm_pos = Vector2(-278.0, -703.0)
+	var tm_pos = Vector2(7034.0, 2883.0)
 	var tile_world = 16.0 * 4.0  # 64 px per tile
 	var interior_min = Vector2(tm_pos.x + 15.0 * tile_world, tm_pos.y + 8.0 * tile_world)
 	var interior_max = Vector2(tm_pos.x + 43.0 * tile_world, tm_pos.y + 33.0 * tile_world)
