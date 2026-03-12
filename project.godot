@@ -19,17 +19,9 @@ config/icon="res://assets/icons/icon.svg"
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
+window/size/mode=3
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
-window/size/mode=3
-
-[input_devices]
-
-pointing/emulate_touch_from_mouse=true
-pointing/emulate_mouse_from_touch=false
-pointing/size/viewport_height=648
-pointing/size/viewport_width=1152
-pointing/stretch/scale=1.0
 
 [input]
 
@@ -50,12 +42,20 @@ down={
 "events": []
 }
 
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+pointing/emulate_mouse_from_touch=false
+pointing/size/viewport_height=648
+pointing/size/viewport_width=1152
+pointing/stretch/scale=1.0
+
 [physics]
 
 3d/physics_engine="Jolt Physics"
 
 [rendering]
 
+textures/canvas_textures/default_texture_filter=0
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="mobile"
-textures/canvas_textures/default_texture_filter=0

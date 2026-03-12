@@ -3,9 +3,6 @@ extends Control
 const MASTER_BUS := "Master"
 var master_bus_index := -1
 var previous_master_volume_db := 0.0
-var play_hitbox: Button
-var help_hitbox: Button
-var sound_hitbox: Button
 
 @onready var play_button: TextureButton = $play
 @onready var help_button: TextureButton = $help
@@ -22,7 +19,6 @@ func _ready():
 	offset_bottom = 0
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	_setup_visual_buttons()
-	_setup_button_hitboxes()
 
 	master_bus_index = AudioServer.get_bus_index(MASTER_BUS)
 	if master_bus_index >= 0:
@@ -34,64 +30,26 @@ func _ready():
 
 
 func _setup_visual_buttons() -> void:
-	play_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	help_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	sound_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Let TextureButtons handle touch/click input directly
+	play_button.mouse_filter = Control.MOUSE_FILTER_STOP
+	help_button.mouse_filter = Control.MOUSE_FILTER_STOP
+	sound_button.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	play_button.disabled = false
 	help_button.disabled = false
 	sound_button.disabled = false
 
-	play_button.anchor_left = 0.0
-	play_button.anchor_top = 0.0
-	play_button.anchor_right = 0.0
-	play_button.anchor_bottom = 0.0
+	for btn in [play_button, help_button, sound_button]:
+		btn.anchor_left = 0.0
+		btn.anchor_top = 0.0
+		btn.anchor_right = 0.0
+		btn.anchor_bottom = 0.0
+		btn.size = Vector2(308.0, 306.0)
+		btn.scale = Vector2(0.35, 0.35)
+
 	play_button.position = Vector2(572.0, 187.0)
-	play_button.size = Vector2(308.0, 306.0)
-	play_button.scale = Vector2(0.35, 0.35)
-
-	help_button.anchor_left = 0.0
-	help_button.anchor_top = 0.0
-	help_button.anchor_right = 0.0
-	help_button.anchor_bottom = 0.0
 	help_button.position = Vector2(760.0, 334.0)
-	help_button.size = Vector2(307.0, 308.0)
-	help_button.scale = Vector2(0.35, 0.35)
-
-	sound_button.anchor_left = 0.0
-	sound_button.anchor_top = 0.0
-	sound_button.anchor_right = 0.0
-	sound_button.anchor_bottom = 0.0
 	sound_button.position = Vector2(386.0, 331.0)
-	sound_button.size = Vector2(309.0, 309.0)
-	sound_button.scale = Vector2(0.35, 0.35)
-
-
-func _setup_button_hitboxes() -> void:
-	for child in get_children():
-		if child.name.begins_with("Hitbox"):
-			child.queue_free()
-
-	play_hitbox = _create_hitbox_button("HitboxPlay", Rect2(play_button.position, play_button.size * play_button.scale), _on_play_pressed, _on_play_mouse_entered)
-	help_hitbox = _create_hitbox_button("HitboxHelp", Rect2(help_button.position, help_button.size * help_button.scale), _on_help_pressed, _on_help_mouse_entered)
-	sound_hitbox = _create_hitbox_button("HitboxSound", Rect2(sound_button.position, sound_button.size * sound_button.scale), _on_sound_pressed, _on_sound_mouse_entered)
-
-
-func _create_hitbox_button(button_name: String, rect: Rect2, pressed_callback: Callable, hover_callback: Callable) -> Button:
-	var hitbox = Button.new()
-	hitbox.name = button_name
-	hitbox.position = rect.position
-	hitbox.size = rect.size
-	hitbox.text = ""
-	hitbox.focus_mode = Control.FOCUS_NONE
-	hitbox.flat = true
-	hitbox.modulate = Color(1, 1, 1, 0.02)
-	hitbox.mouse_filter = Control.MOUSE_FILTER_STOP
-	hitbox.pressed.connect(pressed_callback)
-	hitbox.mouse_entered.connect(hover_callback)
-	add_child(hitbox)
-	move_child(hitbox, -1)
-	return hitbox
 
 # PLAY BUTTON
 func _on_play_pressed():

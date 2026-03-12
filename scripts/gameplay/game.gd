@@ -3,14 +3,15 @@ extends Node2D
 @export var enemy_scene: PackedScene = preload("res://Enemy1.tscn")
 @export var max_health := 100
 @export var max_lives := 3
-@export var base_spawn_interval := 2.8
-@export var minimum_spawn_interval := 0.55
-@export var spawn_acceleration := 0.04
+@export var base_spawn_interval := 1.2
+@export var minimum_spawn_interval := 0.35
+@export var spawn_acceleration := 0.06
 @export var map_scale := 2.0
 @export var wall_thickness := 96.0
 @export var obstacle_count_min := 90
 @export var obstacle_count_max := 140
-@export var max_enemies := 38
+@export var max_enemies := 22
+@export var hidden_main_enemy_count := 4
 
 const HOME_SCENE := "res://node_2d.tscn"
 
@@ -74,9 +75,10 @@ func _ready() -> void:
 	_build_pause_menu()
 	_build_audio_players()
 	_build_bounded_map()
+	_spawn_hidden_main_enemies()
 	_setup_spawn_timer()
 	_spawn_enemy_near_player_front()
-	for _index in range(8):
+	for _index in range(6):
 		spawn_enemy()
 	_update_hud()
 
@@ -123,14 +125,16 @@ func _on_spawn_timeout() -> void:
 
 	if get_tree().get_nodes_in_group("enemies").size() < max_enemies:
 		spawn_enemy()
-		if elapsed_time > 50.0 and randf() < 0.45 and get_tree().get_nodes_in_group("enemies").size() < max_enemies:
+		if elapsed_time > 20.0 and randf() < 0.55 and get_tree().get_nodes_in_group("enemies").size() < max_enemies:
+			spawn_enemy()
+		if elapsed_time > 60.0 and randf() < 0.4 and get_tree().get_nodes_in_group("enemies").size() < max_enemies:
 			spawn_enemy()
 	_schedule_next_spawn()
 
 
 func _schedule_next_spawn() -> void:
 	var interval = max(minimum_spawn_interval, base_spawn_interval - elapsed_time * spawn_acceleration)
-	interval += randf_range(-0.6, 0.6)
+	interval += randf_range(-0.3, 0.3)
 	interval = max(interval, minimum_spawn_interval)
 	spawn_timer.start(interval)
 
@@ -152,11 +156,17 @@ func spawn_enemy() -> void:
 	var enemy = enemy_scene.instantiate()
 	enemy.global_position = _pick_random_spawn_point()
 	enemies_layer.add_child(enemy)
+	enemy.call("configure_enemy", false)
 	_register_enemy(enemy)
 
 
 func _register_enemy(enemy: Node) -> void:
 	enemy.add_to_group("enemies")
+	for other_enemy in get_tree().get_nodes_in_group("enemies"):
+		if other_enemy == enemy:
+			continue
+		enemy.add_collision_exception_with(other_enemy)
+		other_enemy.add_collision_exception_with(enemy)
 	enemy.call("set_player", player)
 	enemy.call("set_difficulty_scale", _difficulty_multiplier())
 	if not enemy.is_connected("enemy_attacked_player", _on_enemy_attacked_player):
@@ -252,31 +262,23 @@ func _start_life_loss_pause() -> void:
 
 func _update_enemy_visibility() -> void:
 	for enemy in get_tree().get_nodes_in_group("enemies"):
-		var distance = enemy.global_position.distance_to(player.global_position)
-		var seen = player.is_point_in_torch(enemy.global_position) or distance <= 190.0
+		var seen = player.is_point_in_torch(enemy.global_position) and enemy.call("can_be_seen")
 		enemy.call("set_seen", seen)
 
 
 func _update_alert_audio_state() -> void:
-	var has_alert = false
 	var nearest_enemy_distance := INF
 	for enemy in get_tree().get_nodes_in_group("enemies"):
 		nearest_enemy_distance = min(nearest_enemy_distance, enemy.global_position.distance_to(player.global_position))
-		if enemy.call("get_is_alerted"):
-			has_alert = true
 
-	var enemy_is_close = nearest_enemy_distance <= 320.0
+	var enemy_is_close = nearest_enemy_distance <= 185.0
 
-	if (has_alert or enemy_is_close) and growl_cooldown <= 0.0:
+	if enemy_is_close and growl_cooldown <= 0.0:
 		if zombie_alert_player:
 			zombie_alert_player.stop()
 			zombie_alert_player.play()
 		growl_cooldown = 2.8
-
-	if has_alert or enemy_is_close:
-		alert_audio_latched = true
-	else:
-		alert_audio_latched = false
+	alert_audio_latched = enemy_is_close
 
 
 func _build_bounded_map() -> void:
@@ -358,6 +360,7 @@ func _spawn_enemy_near_player_front() -> void:
 	var enemy = enemy_scene.instantiate()
 	enemy.global_position = preferred
 	enemies_layer.add_child(enemy)
+	enemy.call("configure_enemy", false)
 	_register_enemy(enemy)
 
 
@@ -433,8 +436,38 @@ func _build_audio_players() -> void:
 	zombie_alert_player = AudioStreamPlayer.new()
 	zombie_alert_player.stream = load("res://assets/audio/zombie.mp3")
 	zombie_alert_player.bus = "Master"
-	zombie_alert_player.volume_db = 4.0
+	zombie_alert_player.volume_db = -12.0
 	add_child(zombie_alert_player)
+
+
+func _spawn_hidden_main_enemies() -> void:
+	if enemy_scene == null:
+		return
+
+	for _index in range(hidden_main_enemy_count):
+		var enemy = enemy_scene.instantiate()
+		enemy.global_position = _pick_hidden_main_enemy_spawn()
+		enemies_layer.add_child(enemy)
+		enemy.call("configure_enemy", true)
+		_register_enemy(enemy)
+
+
+func _pick_hidden_main_enemy_spawn() -> Vector2:
+	var margin = wall_thickness + 48.0
+	var min_x = map_rect.position.x + margin
+	var max_x = map_rect.end.x - margin
+	var min_y = map_rect.position.y + margin
+	var max_y = map_rect.end.y - margin
+
+	for _attempt in range(60):
+		var candidate = Vector2(randf_range(min_x, max_x), randf_range(min_y, max_y))
+		if candidate.distance_to(player.global_position) < 320.0:
+			continue
+		if _is_position_blocked(candidate):
+			continue
+		return candidate
+
+	return Vector2(randf_range(min_x, max_x), randf_range(min_y, max_y))
 
 
 func _build_hud() -> void:
