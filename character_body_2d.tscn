@@ -406,6 +406,7 @@ shape = SubResource("CircleShape2D_6ct3r")
 
 [node name="ShootSound" type="AudioStreamPlayer2D" parent="." unique_id=653285701]
 stream = ExtResource("10_1kp85")
+volume_db = -4.4
 
 [node name="Camera2D" type="Camera2D" parent="."]
 enabled = true

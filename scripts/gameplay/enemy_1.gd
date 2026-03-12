@@ -53,8 +53,8 @@ func _ready():
 	last_position = global_position
 
 	heavy_growl_player = AudioStreamPlayer2D.new()
-	heavy_growl_player.stream = load("res://assets/audio/zombie.mp3")
-	heavy_growl_player.volume_db = 2.0
+	heavy_growl_player.stream = load("res://assets/audio/bigzombie.mp3")
+	heavy_growl_player.volume_db = 0
 	heavy_growl_player.max_distance = 1400.0
 	add_child(heavy_growl_player)
 
