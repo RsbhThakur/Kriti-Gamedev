@@ -9,6 +9,7 @@
 /bin/
 /dist/
 *.apk
+*.insdig
 *.aab
 *.ipa
 *.exe
