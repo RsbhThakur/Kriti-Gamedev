@@ -99,8 +99,8 @@ func _apply_ui_layout() -> void:
 		return
 
 	var min_dim = min(viewport_size.x, viewport_size.y)
-	var joy_size = clamp(min_dim * 0.22, 180.0, 260.0)
-	var joy_margin = clamp(min_dim * 0.05, 24.0, 72.0)
+	var joy_size = clamp(min_dim * 0.24, 190.0, 280.0)
+	var joy_margin = clamp(min_dim * 0.07, 40.0, 90.0)
 
 	move_joystick.anchor_left = 0.0
 	move_joystick.anchor_right = 0.0
@@ -154,6 +154,19 @@ func _apply_ui_layout() -> void:
 		if pause_home_button:
 			pause_home_button.position = Vector2(button_x, 254)
 			pause_home_button.size = Vector2(button_width, button_height)
+
+	# Sync joystick internal default positions after layout so _reset() snaps
+	# back to the correct corner position instead of the stale startup position.
+	call_deferred("_sync_joystick_defaults")
+
+
+func _sync_joystick_defaults() -> void:
+	if is_instance_valid(move_joystick) and move_joystick._base != null:
+		move_joystick._base_default_position = move_joystick._base.position
+		move_joystick._tip_default_position = move_joystick._tip.position
+	if is_instance_valid(gun_joystick) and gun_joystick._base != null:
+		gun_joystick._base_default_position = gun_joystick._base.position
+		gun_joystick._tip_default_position = gun_joystick._tip.position
 
 
 func _process(delta: float) -> void:

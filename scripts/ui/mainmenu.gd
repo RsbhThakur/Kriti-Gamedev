@@ -67,9 +67,9 @@ func _apply_menu_layout() -> void:
 	var help_size = help_tex_size * MENU_BUTTON_SCALE
 	var sound_size = sound_tex_size * MENU_BUTTON_SCALE
 
-	var horizontal_gap = clamp(viewport_size.x * 0.03, 20.0, 48.0)
+	var horizontal_gap = clamp(viewport_size.x * 0.16, 90.0, 180.0)
 	var top_y = clamp(viewport_size.y * 0.22, 140.0, 240.0)
-	var bottom_y = top_y + play_size.y + clamp(viewport_size.y * 0.03, 20.0, 40.0)
+	var bottom_y = top_y + play_size.y + clamp(viewport_size.y * 0.10, 60.0, 100.0)
 	var center_x = viewport_size.x * 0.5
 
 	play_button.anchor_left = 0.0
