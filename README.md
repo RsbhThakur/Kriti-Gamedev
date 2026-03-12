@@ -1,6 +1,6 @@
 # Blinking Dead
 
-**Team:** Hostel-2673 — Low Prep  
+**Team:** Hostel-2673  
 **Event:** GDAI × Tech Meet Game Jam  
 **Theme:** Seen vs. Unseen  
 **Engine:** Godot 4.6.1  
