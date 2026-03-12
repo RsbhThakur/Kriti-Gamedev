@@ -46,7 +46,7 @@ func _setup_visual_buttons() -> void:
 	play_button.anchor_top = 0.0
 	play_button.anchor_right = 0.0
 	play_button.anchor_bottom = 0.0
-	play_button.position = Vector2(572.0, 187.0)
+	play_button.position = Vector2(680.0, 187.0)
 	play_button.size = Vector2(308.0, 306.0)
 	play_button.scale = Vector2(0.35, 0.35)
 
@@ -54,7 +54,7 @@ func _setup_visual_buttons() -> void:
 	help_button.anchor_top = 0.0
 	help_button.anchor_right = 0.0
 	help_button.anchor_bottom = 0.0
-	help_button.position = Vector2(760.0, 334.0)
+	help_button.position = Vector2(847.0, 334.0)
 	help_button.size = Vector2(307.0, 308.0)
 	help_button.scale = Vector2(0.35, 0.35)
 
@@ -62,7 +62,7 @@ func _setup_visual_buttons() -> void:
 	sound_button.anchor_top = 0.0
 	sound_button.anchor_right = 0.0
 	sound_button.anchor_bottom = 0.0
-	sound_button.position = Vector2(386.0, 331.0)
+	sound_button.position = Vector2(524.0, 331.0)
 	sound_button.size = Vector2(309.0, 309.0)
 	sound_button.scale = Vector2(0.35, 0.35)
 

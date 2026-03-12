@@ -78,10 +78,10 @@ stretch_mode = 6
 
 [node name="play" type="TextureButton" parent="mainmenu" unique_id=1447002932]
 layout_mode = 0
-offset_left = 572.0
-offset_top = 187.0
-offset_right = 880.0
-offset_bottom = 493.0
+offset_left = 680.00006
+offset_top = 177.0
+offset_right = 988.00006
+offset_bottom = 483.0
 scale = Vector2(0.35, 0.35)
 texture_normal = SubResource("AtlasTexture_0hol4")
 texture_pressed = SubResource("AtlasTexture_q6r6c")
@@ -89,10 +89,10 @@ texture_hover = SubResource("AtlasTexture_kdubu")
 
 [node name="help" type="TextureButton" parent="mainmenu" unique_id=1495706166]
 layout_mode = 0
-offset_left = 760.0
-offset_top = 334.0
-offset_right = 1069.0
-offset_bottom = 644.0
+offset_left = 847.00006
+offset_top = 367.0
+offset_right = 1156.0
+offset_bottom = 677.0
 scale = Vector2(0.35, 0.35)
 texture_normal = SubResource("AtlasTexture_rj586")
 texture_pressed = SubResource("AtlasTexture_4d7sh")
@@ -100,10 +100,10 @@ texture_hover = SubResource("AtlasTexture_x0ka3")
 
 [node name="sound" type="TextureButton" parent="mainmenu" unique_id=462245928]
 layout_mode = 0
-offset_left = 386.0
-offset_top = 331.0
-offset_right = 695.0
-offset_bottom = 640.0
+offset_left = 524.00006
+offset_top = 367.0
+offset_right = 833.00006
+offset_bottom = 676.0
 scale = Vector2(0.35, 0.35)
 toggle_mode = true
 action_mode = 0

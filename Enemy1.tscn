@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://b22fio1dbhq52"]
 
 [ext_resource type="Script" uid="uid://b4rd2f8deww70" path="res://scripts/gameplay/enemy_1.gd" id="1_mo1vv"]
-[ext_resource type="Texture2D" uid="uid://biiqy0bvgr5a7" path="res://assets/textures/Zombie_Axe_Side_Walk-Sheet8.png" id="2_cj2mj"]
+[ext_resource type="Texture2D" uid="uid://ccvywrbatn4pi" path="res://assets/textures/Zombie_Axe_Side_Walk-Sheet8.png" id="2_cj2mj"]
 [ext_resource type="Texture2D" uid="uid://t6u7crl0uk3s" path="res://images/Zombie_Axe_Down_Walk-Sheet8.png" id="2_vw5da"]
 [ext_resource type="Texture2D" uid="uid://dfr2qf5lifpau" path="res://images/Zombie_Axe_Side-left_Walk-Sheet8.png" id="3_2vgp3"]
-[ext_resource type="AudioStream" path="res://assets/audio/zombieattack.mp3" id="4_zatk"]
+[ext_resource type="AudioStream" uid="uid://d4a5ngljc8m0t" path="res://assets/audio/zombieattack.mp3" id="4_zatk"]
 [ext_resource type="Texture2D" uid="uid://cgrl1k5r26rvx" path="res://images/Zombie_Axe_Up_Walk-Sheet8.png" id="5_tamnr"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_hwd14"]
