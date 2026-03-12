@@ -37,8 +37,14 @@ var hud_lives_label: Label
 var hud_time_label: Label
 var hud_kills_label: Label
 var hud_game_over_label: Label
+var pause_button: Button
 var hit_flash: ColorRect
 var pause_panel: Panel
+var pause_title_label: Label
+var pause_stats_label: Label
+var pause_resume_button: Button
+var pause_restart_button: Button
+var pause_home_button: Button
 
 @onready var world := $World
 @onready var ground_layer := $World/Ground
@@ -51,6 +57,7 @@ var pause_panel: Panel
 
 func _ready() -> void:
 	randomize()
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	if OS.get_name() == "Android":
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 
@@ -77,7 +84,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if Input.is_action_just_pressed("ui_cancel"):
-		_toggle_pause_menu()
+		_on_pause_requested()
 
 	if get_tree().paused:
 		return
@@ -226,8 +233,9 @@ func _trigger_game_over() -> void:
 	game_over = true
 	spawn_timer.stop()
 	player.set_can_control(false)
-	hud_game_over_label.visible = true
+	hud_game_over_label.visible = false
 	flash_hit_overlay(0.45)
+	_show_game_over_menu()
 	_update_hud()
 
 
@@ -237,18 +245,23 @@ func _start_life_loss_pause() -> void:
 	player.set_can_control(false)
 	player.play_death_feedback()
 	flash_hit_overlay(0.4)
+	if pause_button:
+		pause_button.visible = false
 
-	for enemy in get_tree().get_nodes_in_group("enemies"):
-		enemy.call("set_frozen", true)
+	_clear_all_enemies()
 
-	await get_tree().create_timer(3.0).timeout
+	await get_tree().process_frame
+	await get_tree().create_timer(2.0).timeout
 	health = max_health
-	player.global_position = player.global_position + Vector2(randf_range(-80, 80), randf_range(-80, 80))
-	for enemy in get_tree().get_nodes_in_group("enemies"):
-		enemy.call("set_frozen", false)
+	seconds_since_last_hit = 0.0
+	regen_tick = 0.0
+	player.global_position = map_rect.get_center()
+	await _reset_enemies_after_life_loss()
 
 	player.set_can_control(true)
 	is_life_loss_pause = false
+	if pause_button:
+		pause_button.visible = not is_pause_menu_open
 	if not game_over:
 		_schedule_next_spawn()
 
@@ -440,6 +453,18 @@ func _spawn_hidden_main_enemies() -> void:
 		_spawn_one_heavy_enemy()
 
 
+func _clear_all_enemies() -> void:
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		enemy.queue_free()
+
+
+func _reset_enemies_after_life_loss() -> void:
+	_clear_all_enemies()
+	await get_tree().process_frame
+	_spawn_hidden_main_enemies()
+	spawn_enemy()
+
+
 func _spawn_one_heavy_enemy() -> void:
 	if enemy_scene == null:
 		return
@@ -498,6 +523,20 @@ func _build_hud() -> void:
 	hud_kills_label.position = Vector2(660, 16)
 	hud_root.add_child(hud_kills_label)
 
+	pause_button = Button.new()
+	pause_button.name = "PauseButton"
+	pause_button.text = "Pause"
+	pause_button.anchor_left = 1.0
+	pause_button.anchor_right = 1.0
+	pause_button.offset_left = -140
+	pause_button.offset_right = -20
+	pause_button.offset_top = 16
+	pause_button.offset_bottom = 60
+	pause_button.mouse_filter = Control.MOUSE_FILTER_STOP
+	pause_button.process_mode = Node.PROCESS_MODE_ALWAYS
+	pause_button.pressed.connect(_on_pause_button_pressed)
+	hud_root.add_child(pause_button)
+
 	hud_game_over_label = Label.new()
 	hud_game_over_label.position = Vector2(360, 280)
 	hud_game_over_label.size = Vector2(560, 180)
@@ -515,48 +554,122 @@ func _build_hud() -> void:
 func _build_pause_menu() -> void:
 	pause_panel = Panel.new()
 	pause_panel.name = "PausePanel"
-	pause_panel.position = Vector2(480, 180)
-	pause_panel.size = Vector2(320, 240)
+	pause_panel.position = Vector2(460, 150)
+	pause_panel.size = Vector2(360, 320)
 	pause_panel.visible = false
 	pause_panel.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
 	$UI.add_child(pause_panel)
 
-	var title = Label.new()
-	title.text = "Paused"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.position = Vector2(0, 20)
-	title.size = Vector2(320, 36)
-	pause_panel.add_child(title)
+	pause_title_label = Label.new()
+	pause_title_label.text = "Paused"
+	pause_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	pause_title_label.position = Vector2(0, 18)
+	pause_title_label.size = Vector2(360, 36)
+	pause_title_label.add_theme_font_size_override("font_size", 26)
+	pause_panel.add_child(pause_title_label)
 
-	var restart_btn = Button.new()
-	restart_btn.text = "Restart"
-	restart_btn.position = Vector2(90, 90)
-	restart_btn.size = Vector2(140, 40)
-	restart_btn.pressed.connect(_on_restart_pressed)
-	restart_btn.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
-	pause_panel.add_child(restart_btn)
+	pause_stats_label = Label.new()
+	pause_stats_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	pause_stats_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	pause_stats_label.position = Vector2(24, 62)
+	pause_stats_label.size = Vector2(312, 78)
+	pause_panel.add_child(pause_stats_label)
 
-	var home_btn = Button.new()
-	home_btn.text = "Home"
-	home_btn.position = Vector2(90, 144)
-	home_btn.size = Vector2(140, 40)
-	home_btn.pressed.connect(_on_home_pressed)
-	home_btn.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
-	pause_panel.add_child(home_btn)
+	pause_resume_button = Button.new()
+	pause_resume_button.text = "Resume"
+	pause_resume_button.position = Vector2(110, 154)
+	pause_resume_button.size = Vector2(140, 40)
+	pause_resume_button.pressed.connect(_on_resume_pressed)
+	pause_resume_button.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
+	pause_panel.add_child(pause_resume_button)
+
+	pause_restart_button = Button.new()
+	pause_restart_button.text = "Restart"
+	pause_restart_button.position = Vector2(110, 204)
+	pause_restart_button.size = Vector2(140, 40)
+	pause_restart_button.pressed.connect(_on_restart_pressed)
+	pause_restart_button.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
+	pause_panel.add_child(pause_restart_button)
+
+	pause_home_button = Button.new()
+	pause_home_button.text = "Home"
+	pause_home_button.position = Vector2(110, 254)
+	pause_home_button.size = Vector2(140, 40)
+	pause_home_button.pressed.connect(_on_home_pressed)
+	pause_home_button.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
+	pause_panel.add_child(pause_home_button)
+
+	_refresh_pause_menu(false)
 
 
 func _toggle_pause_menu() -> void:
-	is_pause_menu_open = not is_pause_menu_open
-	pause_panel.visible = is_pause_menu_open
-	get_tree().paused = is_pause_menu_open
+	if game_over or is_life_loss_pause:
+		return
+
+	if is_pause_menu_open:
+		_close_pause_menu()
+	else:
+		_open_pause_menu()
+
+
+func _on_pause_requested() -> void:
+	_toggle_pause_menu()
+
+
+func _open_pause_menu() -> void:
+	is_pause_menu_open = true
+	_refresh_pause_menu(false)
+	pause_panel.visible = true
+	if pause_button:
+		pause_button.visible = false
+	get_tree().paused = true
+
+
+func _close_pause_menu() -> void:
+	if game_over:
+		return
+
+	is_pause_menu_open = false
+	pause_panel.visible = false
+	if pause_button:
+		pause_button.visible = true
+	get_tree().paused = false
+
+
+func _show_game_over_menu() -> void:
+	is_pause_menu_open = true
+	_refresh_pause_menu(true)
+	pause_panel.visible = true
+	if pause_button:
+		pause_button.visible = false
+	get_tree().paused = true
+
+
+func _refresh_pause_menu(show_game_over: bool) -> void:
+	if pause_title_label == null or pause_stats_label == null:
+		return
+
+	pause_title_label.text = "Game Over" if show_game_over else "Paused"
+	pause_stats_label.text = "Time: %s\nKills: %d\nLives Left: %d" % [_format_time(elapsed_time), kills, max(lives, 0)]
+	pause_resume_button.visible = not show_game_over
+
+
+func _on_pause_button_pressed() -> void:
+	_on_pause_requested()
+
+
+func _on_resume_pressed() -> void:
+	_close_pause_menu()
 
 
 func _on_restart_pressed() -> void:
+	is_pause_menu_open = false
 	get_tree().paused = false
 	get_tree().reload_current_scene()
 
 
 func _on_home_pressed() -> void:
+	is_pause_menu_open = false
 	get_tree().paused = false
 	get_tree().change_scene_to_file(HOME_SCENE)
 
@@ -567,10 +680,10 @@ func _update_hud() -> void:
 	hud_lives_label.text = "Lives: %d" % lives
 	hud_time_label.text = "Time: %s" % _format_time(elapsed_time)
 	hud_kills_label.text = "Kills: %d" % kills
+	hud_game_over_label.visible = false
 
-	if game_over:
-		hud_game_over_label.visible = true
-		hud_game_over_label.text = "GAME OVER\nTime: %s\nKills: %d\nPress Esc for menu" % [_format_time(elapsed_time), kills]
+	if is_pause_menu_open:
+		_refresh_pause_menu(game_over)
 
 
 func flash_hit_overlay(alpha: float) -> void:
