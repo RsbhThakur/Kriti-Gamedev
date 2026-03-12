@@ -1,0 +1,130 @@
+[gd_scene format=3 uid="uid://cejtg55otvw7u"]
+
+[ext_resource type="Texture2D" uid="uid://mmdiakq7kfv6" path="res://1773125461950.png" id="1_0e48y"]
+[ext_resource type="Script" uid="uid://qh4vv8rbofqf" path="res://mainmenu.gd" id="1_q6r6c"]
+[ext_resource type="Texture2D" uid="uid://bwf64fgqsqsy" path="res://Buttons-01.png" id="2_epypp"]
+[ext_resource type="AudioStream" uid="uid://byj0dq7ot7rd0" path="res://intro.ogg" id="3_epypp"]
+[ext_resource type="AudioStream" uid="uid://ikp3y6dx2nx1" path="res://556 Single WAV.wav" id="5_d21ai"]
+[ext_resource type="AudioStream" uid="uid://cugciq2qy7sbu" path="res://Semi 22LR Reload Part 1 WAV.wav" id="6_rj586"]
+[ext_resource type="AudioStream" uid="uid://bn5lacb1wcodv" path="res://22LR Single Isolated WAV.wav" id="7_4d7sh"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_epypp"]
+atlas = ExtResource("1_0e48y")
+region = Rect2(-1.4602051, 11.793915, 1316.0009, 749.9)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0hol4"]
+atlas = ExtResource("2_epypp")
+region = Rect2(297.6893, 1212.8081, 308.93912, 306.9359)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_q6r6c"]
+atlas = ExtResource("2_epypp")
+region = Rect2(295.7719, 1211.3594, 311.53204, 310.35254)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kdubu"]
+atlas = ExtResource("2_epypp")
+region = Rect2(298.5001, 3069.8364, 311.56528, 305.76367)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0e48y"]
+atlas = ExtResource("2_epypp")
+region = Rect2(299.00043, 1651, 307.92358, 308.00024)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4d7sh"]
+atlas = ExtResource("2_epypp")
+region = Rect2(295.31903, 1648.2721, 312.70197, 312.70203)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rj586"]
+atlas = ExtResource("2_epypp")
+region = Rect2(296.41214, 3507.5898, 310.50644, 309.21802)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_d21ai"]
+atlas = ExtResource("2_epypp")
+region = Rect2(791.89404, 772.0825, 309.8573, 309.85718)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ir8iy"]
+atlas = ExtResource("2_epypp")
+region = Rect2(1286.723, 771.4999, 309.67676, 310.20007)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hqns4"]
+atlas = ExtResource("2_epypp")
+region = Rect2(792.6028, 2627.303, 307.46118, 311.4541)
+
+[node name="Node2D" type="Control" unique_id=55120967]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="mainmenu" type="Control" parent="." unique_id=1513324335]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_q6r6c")
+
+[node name="background" type="TextureRect" parent="mainmenu" unique_id=1795743415]
+layout_mode = 0
+offset_right = 1505.8824
+offset_bottom = 847.05884
+scale = Vector2(0.85, 0.85)
+mouse_filter = 2
+texture = SubResource("AtlasTexture_epypp")
+
+[node name="play" type="TextureButton" parent="mainmenu" unique_id=1447002932]
+layout_mode = 0
+offset_left = 572.0
+offset_top = 187.0
+offset_right = 880.0
+offset_bottom = 493.0
+scale = Vector2(0.35, 0.35)
+texture_normal = SubResource("AtlasTexture_0hol4")
+texture_pressed = SubResource("AtlasTexture_q6r6c")
+texture_hover = SubResource("AtlasTexture_kdubu")
+
+[node name="help" type="TextureButton" parent="mainmenu" unique_id=1495706166]
+layout_mode = 0
+offset_left = 760.0
+offset_top = 334.0
+offset_right = 1067.0
+offset_bottom = 642.0
+scale = Vector2(0.35, 0.35)
+texture_normal = SubResource("AtlasTexture_0e48y")
+texture_pressed = SubResource("AtlasTexture_4d7sh")
+texture_hover = SubResource("AtlasTexture_rj586")
+
+[node name="sound" type="TextureButton" parent="mainmenu" unique_id=462245928]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 386.0
+offset_top = 291.0
+offset_right = 695.0
+offset_bottom = 600.0
+grow_vertical = 0
+scale = Vector2(0.35, 0.35)
+toggle_mode = true
+action_mode = 0
+texture_normal = SubResource("AtlasTexture_d21ai")
+texture_pressed = SubResource("AtlasTexture_ir8iy")
+texture_hover = SubResource("AtlasTexture_hqns4")
+
+[node name="bgm" type="AudioStreamPlayer2D" parent="mainmenu" unique_id=923850584]
+stream = ExtResource("3_epypp")
+autoplay = true
+parameters/looping = true
+
+[node name="playclick" type="AudioStreamPlayer2D" parent="mainmenu" unique_id=1615797845]
+stream = ExtResource("5_d21ai")
+
+[node name="hoversound" type="AudioStreamPlayer2D" parent="mainmenu" unique_id=1373770822]
+stream = ExtResource("6_rj586")
+
+[node name="helpsound" type="AudioStreamPlayer2D" parent="mainmenu" unique_id=1457013565]
+stream = ExtResource("7_4d7sh")
+
+[connection signal="mouse_entered" from="mainmenu/play" to="mainmenu" method="_on_play_mouse_entered"]
+[connection signal="mouse_exited" from="mainmenu/play" to="mainmenu" method="_on_play_mouse_exited"]
+[connection signal="pressed" from="mainmenu/play" to="mainmenu" method="_on_play_pressed"]
+[connection signal="mouse_entered" from="mainmenu/help" to="mainmenu" method="_on_help_mouse_entered"]
+[connection signal="mouse_exited" from="mainmenu/help" to="mainmenu" method="_on_help_mouse_exited"]
+[connection signal="pressed" from="mainmenu/help" to="mainmenu" method="_on_help_pressed"]
+[connection signal="mouse_entered" from="mainmenu/sound" to="mainmenu" method="_on_sound_mouse_entered"]
+[connection signal="mouse_exited" from="mainmenu/sound" to="mainmenu" method="_on_sound_mouse_exited"]
+[connection signal="pressed" from="mainmenu/sound" to="mainmenu" method="_on_sound_pressed"]

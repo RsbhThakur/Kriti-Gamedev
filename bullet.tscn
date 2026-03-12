@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://ccnek6nd7xf5h"]
+
+[ext_resource type="Script" uid="uid://b62ogfx4gqkar" path="res://bullet.gd" id="1_v8qja"]
+[ext_resource type="Texture2D" uid="uid://hn1rg6jcia0q" path="res://Fire_Down-Sheet3.png" id="2_v8qja"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_v8qja"]
+radius = 8.0
+
+[node name="Node2D" type="CharacterBody2D" unique_id=1762126615]
+show_behind_parent = true
+script = ExtResource("1_v8qja")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1923763874]
+
+[node name="Icon" type="Sprite2D" parent="." unique_id=1276468617]
+position = Vector2(18, 14)
+scale = Vector2(4, 4)
+texture = ExtResource("2_v8qja")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=506636587]
+position = Vector2(18, 14)
+shape = SubResource("CircleShape2D_v8qja")

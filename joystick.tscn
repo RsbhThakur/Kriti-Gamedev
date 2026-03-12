@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://c3s8jcj1tsfan"]
+
+[ext_resource type="Script" uid="uid://p5a48x0ht6ut" path="res://joystick.gd" id="1_413m4"]
+[ext_resource type="PackedScene" uid="uid://dk4r75hvkltjq" path="res://base.tscn" id="2_413m4"]
+[ext_resource type="PackedScene" uid="uid://dpst5i6s8u8dx" path="res://knob.tscn" id="3_jhikm"]
+
+[node name="joystick" type="Control" unique_id=1214852806]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_413m4")
+metadata/_edit_horizontal_guides_ = [-16.0]
+
+[node name="Base" parent="." unique_id=598655436 instance=ExtResource("2_413m4")]
+layout_mode = 0
+anchors_preset = 0
+
+[node name="Knob" parent="." unique_id=387101466 instance=ExtResource("3_jhikm")]
+layout_mode = 0
+anchors_preset = 0

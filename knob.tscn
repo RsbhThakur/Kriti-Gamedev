@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://dpst5i6s8u8dx"]
+
+[ext_resource type="Texture2D" uid="uid://bo4po5djed36h" path="res://images/DR Mov1 Blue.png" id="1_ixyjt"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jhikm"]
+atlas = ExtResource("1_ixyjt")
+region = Rect2(435, 479, 1166, 1168)
+
+[node name="Knob" type="TextureRect" unique_id=387101466]
+anchors_preset = -1
+anchor_left = 18.6
+anchor_top = 8.400001
+anchor_right = 18.6
+anchor_bottom = 8.400001
+offset_left = -192.0
+offset_top = -144.00003
+offset_right = 974.0
+offset_bottom = 1662.4517
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.3, 0.155)
+texture = SubResource("AtlasTexture_jhikm")
