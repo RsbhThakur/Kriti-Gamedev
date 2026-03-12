@@ -11,7 +11,7 @@ extends Node2D
 
 const HOME_SCENE := "res://node_2d.tscn"
 const SMALL_SPAWN_RATE_MULTIPLIER := 1.4
-const BIG_SPAWN_RATE_MULTIPLIER := 1.4
+const BIG_SPAWN_RATE_MULTIPLIER := 1.2
 
 var health := 100
 var lives := 3
@@ -426,14 +426,18 @@ func _build_newmap() -> void:
 
 func _build_audio_players() -> void:
 	bgm_player = AudioStreamPlayer.new()
-	bgm_player.stream = load("res://assets/audio/level3.ogg")
+	var bgm_stream = load("res://assets/audio/level3.ogg")
+	if bgm_stream != null:
+		if bgm_stream.has_method("set_loop") or "loop" in bgm_stream:
+			bgm_stream.loop = true
+		bgm_player.stream = bgm_stream
 	bgm_player.bus = "Master"
-	bgm_player.volume_db =-2.0
+	bgm_player.volume_db = -2.0
 	bgm_player.autoplay = true
 	bgm_player.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(bgm_player)
-	bgm_player.play()
-	bgm_player.stream.loop=true
+	if bgm_player.stream != null:
+		bgm_player.play()
 
 	zombie_alert_player = AudioStreamPlayer.new()
 	zombie_alert_player.stream = load("res://assets/audio/zombie.mp3")
