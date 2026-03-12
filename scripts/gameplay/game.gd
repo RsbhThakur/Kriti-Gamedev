@@ -10,6 +10,8 @@ extends Node2D
 @export var hidden_main_enemy_count := 4
 
 const HOME_SCENE := "res://node_2d.tscn"
+const SMALL_SPAWN_RATE_MULTIPLIER := 1.4
+const BIG_SPAWN_RATE_MULTIPLIER := 1.2
 
 var health := 100
 var lives := 3
@@ -22,6 +24,7 @@ var is_life_loss_pause := false
 var is_pause_menu_open := false
 var alert_audio_latched := false
 var growl_cooldown := 0.0
+var big_spawn_fractional_credit := 0.0
 var map_rect: Rect2
 
 var newmap_scene: PackedScene = preload("res://newmap.tscn")
@@ -203,6 +206,7 @@ func _schedule_next_spawn() -> void:
 	var interval = max(minimum_spawn_interval, base_spawn_interval - elapsed_time * spawn_acceleration)
 	interval += randf_range(-0.6, 0.6)
 	interval = max(interval, minimum_spawn_interval)
+	interval /= SMALL_SPAWN_RATE_MULTIPLIER
 	spawn_timer.start(interval)
 
 
@@ -296,9 +300,9 @@ func _on_enemy_attacked_player(damage: int) -> void:
 
 func _on_enemy_died(kill_value: int = 1) -> void:
 	kills += kill_value
-	# If a big enemy died, respawn a new one elsewhere
+	# If a big enemy died, respawn scaled big-enemy count elsewhere
 	if kill_value >= 5:
-		call_deferred("_spawn_one_heavy_enemy")
+		call_deferred("_spawn_scaled_heavy_on_death")
 
 
 func _trigger_game_over() -> void:
@@ -527,7 +531,22 @@ func _spawn_hidden_main_enemies() -> void:
 	if enemy_scene == null:
 		return
 
-	for _index in range(hidden_main_enemy_count):
+	var scaled_hidden_count = int(round(float(hidden_main_enemy_count) * BIG_SPAWN_RATE_MULTIPLIER))
+	scaled_hidden_count = max(scaled_hidden_count, 1)
+	for _index in range(scaled_hidden_count):
+		_spawn_one_heavy_enemy()
+
+
+func _spawn_scaled_heavy_on_death() -> void:
+	if enemy_scene == null:
+		return
+
+	var total = BIG_SPAWN_RATE_MULTIPLIER + big_spawn_fractional_credit
+	var spawn_count = int(floor(total))
+	big_spawn_fractional_credit = total - float(spawn_count)
+	spawn_count = max(spawn_count, 1)
+
+	for _index in range(spawn_count):
 		_spawn_one_heavy_enemy()
 
 
