@@ -2,7 +2,7 @@ extends CharacterBody2D
 
 @export var speed = 200
 @export var bullet_scene: PackedScene = preload("res://bullet.tscn")
-@export var torch_angle_degrees: float = 90.0
+@export var torch_angle_degrees: float = 70.0
 @export var torch_range: float = 360.0
 @export var gun_joystick_path: NodePath
 @export var movement_joystick_path: NodePath
@@ -18,6 +18,7 @@ var can_control := true
 
 var fire_rate = 0.2
 var fire_timer = 0
+var wall_ray_callable: Callable  # Returns distance to first wall along a ray
 
 
 func _ready() -> void:
@@ -171,6 +172,15 @@ func is_point_in_torch(point: Vector2) -> bool:
 	return angle_to_point <= half_angle
 
 
+func _get_ray_reach(ray_dir: Vector2) -> float:
+	# Returns the distance this ray can travel before hitting a wall.
+	if wall_ray_callable.is_valid():
+		var d = wall_ray_callable.call(global_position, ray_dir, torch_range)
+		if d >= 0.0:
+			return d
+	return torch_range
+
+
 func _draw() -> void:
 	var dir = get_torch_direction()
 	if dir == Vector2.ZERO:
@@ -183,8 +193,13 @@ func _draw() -> void:
 	for index in range(steps + 1):
 		var t = float(index) / float(steps)
 		var angle = lerp(-half_angle, half_angle, t)
-		points.append(dir.rotated(angle) * torch_range)
+		var ray_dir = dir.rotated(angle)
+		var reach = _get_ray_reach(ray_dir)
+		points.append(ray_dir * reach)
 
 	draw_colored_polygon(points, Color(1.0, 0.95, 0.55, 0.18))
-	draw_line(Vector2.ZERO, dir.rotated(-half_angle) * torch_range, Color(1.0, 0.55, 0.45, 0.75), 3.0)
-	draw_line(Vector2.ZERO, dir.rotated(half_angle) * torch_range, Color(1.0, 0.55, 0.45, 0.75), 3.0)
+
+	var left_dir = dir.rotated(-half_angle)
+	var right_dir = dir.rotated(half_angle)
+	draw_line(Vector2.ZERO, left_dir * _get_ray_reach(left_dir), Color(1.0, 0.55, 0.45, 0.75), 3.0)
+	draw_line(Vector2.ZERO, right_dir * _get_ray_reach(right_dir), Color(1.0, 0.55, 0.45, 0.75), 3.0)

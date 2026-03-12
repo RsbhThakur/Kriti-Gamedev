@@ -25,6 +25,7 @@ var growl_cooldown := 0.0
 var map_rect: Rect2
 
 var newmap_scene: PackedScene = preload("res://newmap.tscn")
+var wall_tilemap: TileMap
 
 var spawn_timer: Timer
 var bgm_player: AudioStreamPlayer
@@ -151,6 +152,7 @@ func _register_enemy(enemy: Node) -> void:
 	enemy.add_to_group("enemies")
 	enemy.call("set_player", player)
 	enemy.call("set_difficulty_scale", _difficulty_multiplier())
+	enemy.set("wall_check_callable", Callable(self, "_is_wall_between"))
 	if not enemy.is_connected("enemy_attacked_player", _on_enemy_attacked_player):
 		enemy.connect("enemy_attacked_player", _on_enemy_attacked_player)
 	if not enemy.is_connected("enemy_died", _on_enemy_died):
@@ -213,8 +215,11 @@ func _on_enemy_attacked_player(damage: int) -> void:
 	_start_life_loss_pause()
 
 
-func _on_enemy_died() -> void:
-	kills += 1
+func _on_enemy_died(kill_value: int = 1) -> void:
+	kills += kill_value
+	# If a big enemy died, respawn a new one elsewhere
+	if kill_value >= 5:
+		call_deferred("_spawn_one_heavy_enemy")
 
 
 func _trigger_game_over() -> void:
@@ -250,8 +255,17 @@ func _start_life_loss_pause() -> void:
 
 func _update_enemy_visibility() -> void:
 	for enemy in get_tree().get_nodes_in_group("enemies"):
-		var seen = player.is_point_in_torch(enemy.global_position) and enemy.call("can_be_seen")
-		enemy.call("set_seen", seen)
+		if not enemy.call("can_be_seen"):
+			enemy.call("set_seen", false)
+			continue
+		var in_torch = player.is_point_in_torch(enemy.global_position)
+		if in_torch:
+			# Check tile-based line-of-sight — don't reveal through walls
+			if _is_wall_between(player.global_position, enemy.global_position):
+				in_torch = false
+			enemy.call("set_seen", in_torch)
+		else:
+			enemy.call("set_seen", false)
 
 
 func _update_alert_audio_state() -> void:
@@ -281,6 +295,9 @@ func _build_newmap() -> void:
 	var map_instance = newmap_scene.instantiate()
 	ground_layer.add_child(map_instance)
 
+	# Grab reference to the TileMap for tile-based wall checks
+	wall_tilemap = map_instance.get_node("TileMap")
+
 	# The TileMap in newmap is at position (-278, -703) with scale (4,4)
 	# Tile size is 16x16. The enclosed walled area is:
 	#   Left wall column X=14, Right wall column X=43 (vertical walls, source 6)
@@ -295,6 +312,12 @@ func _build_newmap() -> void:
 
 	# Place the player in the centre of the enclosed area
 	player.global_position = map_rect.get_center()
+
+	# Give the player a callable for ray-wall intersection (torch clipping)
+	player.wall_ray_callable = Callable(self, "_ray_hit_wall_distance")
+
+	# Build a NavigationRegion2D covering the playable interior
+	_build_navigation_region()
 
 
 func _build_audio_players() -> void:
@@ -312,16 +335,119 @@ func _build_audio_players() -> void:
 	add_child(zombie_alert_player)
 
 
+# ---------- Tile-based line-of-sight helpers ----------
+
+func _world_to_tile(world_pos: Vector2) -> Vector2i:
+	# Convert a world position to TileMap cell coordinates.
+	var local_pos = (world_pos - wall_tilemap.global_position) / wall_tilemap.scale
+	return wall_tilemap.local_to_map(local_pos)
+
+
+func _is_wall_at_tile(tile_pos: Vector2i) -> bool:
+	# Only count a tile as a wall if it has physics collision polygons.
+	for layer_id in range(wall_tilemap.get_layers_count()):
+		var tile_data = wall_tilemap.get_cell_tile_data(layer_id, tile_pos)
+		if tile_data != null and tile_data.get_collision_polygons_count(0) > 0:
+			return true
+	return false
+
+
+func _is_wall_between(from_pos: Vector2, to_pos: Vector2) -> bool:
+	# Bresenham line trace through the tile grid.
+	# Returns true if any cell on the line contains a wall tile (layer 1).
+	if wall_tilemap == null:
+		return false
+
+	var from_tile := _world_to_tile(from_pos)
+	var to_tile := _world_to_tile(to_pos)
+
+	var dx := absi(to_tile.x - from_tile.x)
+	var dy := absi(to_tile.y - from_tile.y)
+	var sx := 1 if from_tile.x < to_tile.x else -1
+	var sy := 1 if from_tile.y < to_tile.y else -1
+	var err := dx - dy
+
+	var x := from_tile.x
+	var y := from_tile.y
+
+	while true:
+		# Skip the start tile (player's own cell)
+		if not (x == from_tile.x and y == from_tile.y):
+			if _is_wall_at_tile(Vector2i(x, y)):
+				return true
+
+		if x == to_tile.x and y == to_tile.y:
+			break
+
+		var e2 := 2 * err
+		if e2 > -dy:
+			err -= dy
+			x += sx
+		if e2 < dx:
+			err += dx
+			y += sy
+
+	return false
+
+
+func _ray_hit_wall_distance(origin: Vector2, ray_dir: Vector2, max_dist: float) -> float:
+	# Walk along the ray in tile-sized steps and return the distance
+	# to the first wall tile hit.  Returns -1.0 if no wall is hit.
+	if wall_tilemap == null:
+		return -1.0
+
+	var tile_world := 16.0 * wall_tilemap.scale.x   # 64 px per tile
+	var step := tile_world * 0.45                     # slightly less than half a tile for accuracy
+	var dist := 0.0
+
+	while dist <= max_dist:
+		var sample_pos := origin + ray_dir * dist
+		var tile_pos := _world_to_tile(sample_pos)
+		if _is_wall_at_tile(tile_pos):
+			return dist
+		dist += step
+
+	return -1.0
+
+
+func _build_navigation_region() -> void:
+	# Create a simple navigation polygon covering the playable area.
+	# The TileMap's own physics collisions will act as obstacles that
+	# NavigationAgent2D avoids via avoidance, but we need a walkable
+	# region that the nav system can path through.
+	var nav_region = NavigationRegion2D.new()
+	nav_region.name = "NavRegion"
+	world.add_child(nav_region)
+
+	var nav_poly = NavigationPolygon.new()
+	# Outer boundary = the full playable interior rect
+	var outline = PackedVector2Array([
+		map_rect.position,
+		Vector2(map_rect.end.x, map_rect.position.y),
+		map_rect.end,
+		Vector2(map_rect.position.x, map_rect.end.y)
+	])
+	nav_poly.add_outline(outline)
+	nav_poly.make_polygons_from_outlines()
+	nav_region.navigation_polygon = nav_poly
+
+
 func _spawn_hidden_main_enemies() -> void:
 	if enemy_scene == null:
 		return
 
 	for _index in range(hidden_main_enemy_count):
-		var enemy = enemy_scene.instantiate()
-		enemy.global_position = _pick_hidden_main_enemy_spawn()
-		enemies_layer.add_child(enemy)
-		enemy.call("configure_enemy", true)
-		_register_enemy(enemy)
+		_spawn_one_heavy_enemy()
+
+
+func _spawn_one_heavy_enemy() -> void:
+	if enemy_scene == null:
+		return
+	var enemy = enemy_scene.instantiate()
+	enemy.global_position = _pick_hidden_main_enemy_spawn()
+	enemies_layer.add_child(enemy)
+	enemy.call("configure_enemy", true)
+	_register_enemy(enemy)
 
 
 func _pick_hidden_main_enemy_spawn() -> Vector2:

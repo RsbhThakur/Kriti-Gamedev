@@ -1,7 +1,7 @@
 extends CharacterBody2D
 
 signal enemy_attacked_player(damage: int)
-signal enemy_died
+signal enemy_died(kill_value: int)
 signal enemy_alerted
 
 @export var walk_speed = 65.0
@@ -31,6 +31,15 @@ var difficulty_scale := 1.0
 var is_active := true
 var has_activation_roared := false
 var heavy_growl_player: AudioStreamPlayer2D
+var stuck_timer := 0.0
+var last_position := Vector2.ZERO
+const STUCK_CHECK_INTERVAL := 0.5
+const STUCK_DISTANCE_THRESHOLD := 4.0
+var stuck_direction := Vector2.ZERO
+var stuck_dodge_timer := 0.0
+
+
+var wall_check_callable: Callable
 
 
 func _ready():
@@ -40,6 +49,8 @@ func _ready():
 		visible = false
 	if player_path != NodePath():
 		player = get_node_or_null(player_path)
+
+	last_position = global_position
 
 	heavy_growl_player = AudioStreamPlayer2D.new()
 	heavy_growl_player.stream = load("res://assets/audio/zombie.mp3")
@@ -58,6 +69,7 @@ func _physics_process(delta):
 	var to_player = player.global_position - global_position
 	var distance = to_player.length()
 
+	# Heavy enemy activation check
 	if is_heavy_enemy and not is_active:
 		if distance <= activation_radius:
 			is_active = true
@@ -70,64 +82,52 @@ func _physics_process(delta):
 			velocity = Vector2.ZERO
 			return
 
-	var can_see_player = distance <= detect_radius and has_line_of_sight_to_player()
-	var should_chase = distance <= detect_radius
-
-	if can_see_player and not is_alerted:
+	# Once active, always stay alerted and chase
+	if not is_alerted:
 		is_alerted = true
 		emit_signal("enemy_alerted")
-	elif not can_see_player:
-		is_alerted = false
 
+	# Attack if close enough — but only if we have line of sight (no wall between us)
 	if distance <= attack_radius:
-		velocity = Vector2.ZERO
-		try_attack_player()
-	elif should_chase:
-		var move_speed = walk_speed * difficulty_scale
-		if distance <= boost_radius and can_see_player:
-			move_speed = boost_speed * difficulty_scale
+		var can_hit = _has_line_of_sight_to_player()
+		if can_hit:
+			velocity = Vector2.ZERO
+			try_attack_player()
+			move_and_slide()
+			return
+		# Blocked by wall — keep moving toward player instead of standing still
 
-		var direction = pick_clear_direction(to_player.normalized())
-		velocity = direction * move_speed
-		update_animation(direction)
+	# Direct movement toward player with stuck detection
+	var move_speed = walk_speed * difficulty_scale
+	if distance <= boost_radius:
+		move_speed = boost_speed * difficulty_scale
+
+	# Stuck detection: if we haven't moved much, dodge sideways
+	stuck_timer -= delta
+	if stuck_timer <= 0.0:
+		stuck_timer = STUCK_CHECK_INTERVAL
+		if global_position.distance_to(last_position) < STUCK_DISTANCE_THRESHOLD:
+			# Pick a perpendicular dodge direction
+			var perp = Vector2(-to_player.y, to_player.x).normalized()
+			if randf() > 0.5:
+				perp = -perp
+			stuck_direction = (to_player.normalized() * 0.4 + perp * 0.6).normalized()
+			stuck_dodge_timer = 0.6
+		else:
+			stuck_direction = Vector2.ZERO
+		last_position = global_position
+
+	stuck_dodge_timer = max(stuck_dodge_timer - delta, 0.0)
+
+	var direction: Vector2
+	if stuck_dodge_timer > 0.0 and stuck_direction != Vector2.ZERO:
+		direction = stuck_direction
 	else:
-		velocity = Vector2.ZERO
+		direction = to_player.normalized()
 
+	velocity = direction * move_speed
+	update_animation(direction)
 	move_and_slide()
-
-
-func pick_clear_direction(desired_direction: Vector2) -> Vector2:
-	if desired_direction == Vector2.ZERO:
-		return Vector2.ZERO
-
-	var angle_offsets = [0.0, 22.5, -22.5, 45.0, -45.0, 70.0, -70.0, 95.0, -95.0, 140.0, -140.0, 180.0]
-	for angle in angle_offsets:
-		var test_direction = desired_direction.rotated(deg_to_rad(angle)).normalized()
-		if not is_direction_blocked(test_direction):
-			return test_direction
-
-	return Vector2.ZERO
-
-
-func is_direction_blocked(direction: Vector2) -> bool:
-	var space_state = get_world_2d().direct_space_state
-	var query = PhysicsRayQueryParameters2D.create(global_position, global_position + direction * obstacle_probe_distance)
-	query.exclude = [self, player]
-	var result = space_state.intersect_ray(query)
-	return not result.is_empty()
-
-
-func has_line_of_sight_to_player() -> bool:
-	if player == null:
-		return false
-
-	var space_state = get_world_2d().direct_space_state
-	var query = PhysicsRayQueryParameters2D.create(global_position, player.global_position)
-	query.exclude = [self]
-	var hit = space_state.intersect_ray(query)
-	if hit.is_empty():
-		return true
-	return hit.get("collider") == player
 
 
 func update_animation(dir):
@@ -159,6 +159,15 @@ func try_attack_player() -> void:
 	if attack_sound:
 		attack_sound.play()
 	emit_signal("enemy_attacked_player", attack_damage)
+
+
+func _has_line_of_sight_to_player() -> bool:
+	if player == null:
+		return false
+	# Use tile-based wall check instead of physics raycasts
+	if wall_check_callable.is_valid():
+		return not wall_check_callable.call(global_position, player.global_position)
+	return true
 
 
 func set_player(node: Node2D) -> void:
@@ -195,7 +204,8 @@ func configure_enemy(heavy: bool) -> void:
 		attack_damage = 30
 		walk_speed = 48.0
 		boost_speed = 82.0
-		attack_cooldown = 1.8
+		attack_cooldown = 1.25
+		attack_radius = 90.0
 		activation_radius = 230.0
 		is_active = false
 		visible = false
@@ -223,5 +233,6 @@ func take_damage(amount: int = 1) -> void:
 	if current_health > 0:
 		return
 
-	emit_signal("enemy_died")
+	var kill_value = 5 if is_heavy_enemy else 1
+	emit_signal("enemy_died", kill_value)
 	queue_free()
