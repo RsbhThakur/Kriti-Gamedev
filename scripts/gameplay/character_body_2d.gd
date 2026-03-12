@@ -37,7 +37,7 @@ func _physics_process(delta):
 	move_and_slide()
 
 	update_animation(direction)
-	update_look_direction(direction)
+	update_torch_direction(direction)
 
 	fire_timer -= delta
 	shoot()
@@ -86,12 +86,7 @@ func update_animation(dir):
 			sprite.play("walk_up")
 
 
-func update_look_direction(move_direction: Vector2) -> void:
-	var aim = _get_aim_output()
-	if aim.length() >= 0.2:
-		facing_vector = aim.normalized()
-		return
-
+func update_torch_direction(move_direction: Vector2) -> void:
 	if move_direction.length() > 0.1:
 		facing_vector = move_direction.normalized()
 
@@ -101,6 +96,8 @@ func shoot():
 
 	if aim.length() < 0.2:
 		return
+	if facing_vector.length() == 0.0:
+		return
 
 	var angle = facing_vector.angle_to(aim)
 	var max_angle = deg_to_rad(torch_angle_degrees * 0.5)
@@ -109,6 +106,9 @@ func shoot():
 		return
 
 	var final_direction = facing_vector.rotated(angle).normalized()
+	var shot_reach = _get_ray_reach(final_direction)
+	if shot_reach <= 40.0:
+		return
 
 	if fire_timer <= 0:
 		fire_timer = fire_rate
@@ -119,6 +119,7 @@ func shoot():
 		var bullet = bullet_scene.instantiate()
 		bullet.global_position = global_position + final_direction * 40
 		bullet.direction = final_direction
+		bullet.lifetime = max((shot_reach - 40.0) / bullet.speed, 0.01)
 		bullet.from_player = true
 		bullet.damage = 1
 
