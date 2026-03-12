@@ -53,6 +53,7 @@ var output := Vector2.ZERO
 # PRIVATE VARIABLES
 
 var _touch_index : int = -1
+var _mouse_pointer_id : int = -999
 
 @onready var _base := $Base
 @onready var _tip := $Base/Tip
@@ -80,25 +81,56 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
 		if event.pressed:
-			if _is_point_inside_joystick_area(event.position) and _touch_index == -1:
-				if joystick_mode == Joystick_mode.DYNAMIC or joystick_mode == Joystick_mode.FOLLOWING or (joystick_mode == Joystick_mode.FIXED and _is_point_inside_base(event.position)):
-					if joystick_mode == Joystick_mode.DYNAMIC or joystick_mode == Joystick_mode.FOLLOWING:
-						_move_base(event.position)
-					if visibility_mode == Visibility_mode.WHEN_TOUCHED:
-						show()
-					_touch_index = event.index
-					_tip.modulate = pressed_color
-					_update_joystick(event.position)
-					get_viewport().set_input_as_handled()
-		elif event.index == _touch_index:
-			_reset()
-			if visibility_mode == Visibility_mode.WHEN_TOUCHED:
-				hide()
-			get_viewport().set_input_as_handled()
+			_begin_pointer(event.index, event.position)
+		else:
+			_end_pointer(event.index)
 	elif event is InputEventScreenDrag:
-		if event.index == _touch_index:
-			_update_joystick(event.position)
-			get_viewport().set_input_as_handled()
+		_update_pointer(event.index, event.position)
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			_begin_pointer(_mouse_pointer_id, event.position)
+		else:
+			_end_pointer(_mouse_pointer_id)
+	elif event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+		_update_pointer(_mouse_pointer_id, event.position)
+
+
+func _begin_pointer(pointer_id: int, position: Vector2) -> void:
+	if _touch_index != -1:
+		return
+
+	if not _is_point_inside_joystick_area(position):
+		return
+
+	if joystick_mode != Joystick_mode.DYNAMIC and joystick_mode != Joystick_mode.FOLLOWING and not _is_point_inside_base(position):
+		return
+
+	if joystick_mode == Joystick_mode.DYNAMIC or joystick_mode == Joystick_mode.FOLLOWING:
+		_move_base(position)
+
+	if visibility_mode == Visibility_mode.WHEN_TOUCHED:
+		show()
+
+	_touch_index = pointer_id
+	_tip.modulate = pressed_color
+	_update_joystick(position)
+	get_viewport().set_input_as_handled()
+
+
+func _update_pointer(pointer_id: int, position: Vector2) -> void:
+	if pointer_id != _touch_index:
+		return
+	_update_joystick(position)
+	get_viewport().set_input_as_handled()
+
+
+func _end_pointer(pointer_id: int) -> void:
+	if pointer_id != _touch_index:
+		return
+	_reset()
+	if visibility_mode == Visibility_mode.WHEN_TOUCHED:
+		hide()
+	get_viewport().set_input_as_handled()
 
 func _move_base(new_position: Vector2) -> void:
 	_base.global_position = new_position - _base.pivot_offset * get_global_transform_with_canvas().get_scale()
@@ -137,7 +169,6 @@ func _update_joystick(touch_position: Vector2) -> void:
 	if vector.length_squared() > deadzone_size * deadzone_size:
 		is_pressed = true
 		output = (vector - (vector.normalized() * deadzone_size)) / (clampzone_size - deadzone_size)
-		print("Joystick direction: ", output)
 		gun_fired.emit(output)
 	else:
 		is_pressed = false

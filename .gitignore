@@ -1,3 +1,26 @@
-# Godot 4+ specific ignores
+# Godot cache and editor state
 .godot/
+.import/
+*.translation
+
+# Export/build artifacts
 /android/
+/build/
+/bin/
+/dist/
+*.apk
+*.aab
+*.ipa
+*.exe
+*.x86_64
+*.zip
+
+# Logs/temp
+*.log
+*.tmp
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/settings.json

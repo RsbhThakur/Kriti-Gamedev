@@ -1,15 +1,15 @@
 [gd_scene format=3 uid="uid://dij4al5i3meyj"]
 
-[ext_resource type="Texture2D" uid="uid://bj7j16ikaeysb" path="res://Character_down_run_no-hands-Sheet6.png" id="1_dd465"]
-[ext_resource type="Script" uid="uid://hgnycvowhcp8" path="res://character_body_2d.gd" id="1_lhvu3"]
-[ext_resource type="Texture2D" uid="uid://vvdixs82irad" path="res://Character_down_idle_no-hands-Sheet6.png" id="2_6ct3r"]
-[ext_resource type="Texture2D" uid="uid://uqhl3x2j3c7d" path="res://Character_side-left_run_no-hands-Sheet6.png" id="2_lhvu3"]
-[ext_resource type="Texture2D" uid="uid://bgufrwnw1o83d" path="res://Character_side-left_idle_no-hands-Sheet6.png" id="3_1kp85"]
-[ext_resource type="Texture2D" uid="uid://bs1dsobld1vsx" path="res://Character_side_run_no-hands-Sheet6.png" id="3_4sjlk"]
-[ext_resource type="Texture2D" uid="uid://b66orgjma34ay" path="res://Character_side_idle_no-hands-Sheet6.png" id="4_qnedo"]
-[ext_resource type="Texture2D" uid="uid://4nuc3mq5it3i" path="res://Character_up_run_no-hands-Sheet6.png" id="4_qp52p"]
-[ext_resource type="Texture2D" uid="uid://dgbld0ci406ji" path="res://Character_up_idle_no-hands-Sheet6.png" id="5_wyqjk"]
-[ext_resource type="AudioStream" uid="uid://ikp3y6dx2nx1" path="res://556 Single WAV.wav" id="10_1kp85"]
+[ext_resource type="Texture2D" uid="uid://bj7j16ikaeysb" path="res://assets/textures/Character_down_run_no-hands-Sheet6.png" id="1_dd465"]
+[ext_resource type="Script" uid="uid://hgnycvowhcp8" path="res://scripts/gameplay/character_body_2d.gd" id="1_lhvu3"]
+[ext_resource type="Texture2D" uid="uid://vvdixs82irad" path="res://assets/textures/Character_down_idle_no-hands-Sheet6.png" id="2_6ct3r"]
+[ext_resource type="Texture2D" uid="uid://uqhl3x2j3c7d" path="res://assets/textures/Character_side-left_run_no-hands-Sheet6.png" id="2_lhvu3"]
+[ext_resource type="Texture2D" uid="uid://bgufrwnw1o83d" path="res://assets/textures/Character_side-left_idle_no-hands-Sheet6.png" id="3_1kp85"]
+[ext_resource type="Texture2D" uid="uid://bs1dsobld1vsx" path="res://assets/textures/Character_side_run_no-hands-Sheet6.png" id="3_4sjlk"]
+[ext_resource type="Texture2D" uid="uid://b66orgjma34ay" path="res://assets/textures/Character_side_idle_no-hands-Sheet6.png" id="4_qnedo"]
+[ext_resource type="Texture2D" uid="uid://4nuc3mq5it3i" path="res://assets/textures/Character_up_run_no-hands-Sheet6.png" id="4_qp52p"]
+[ext_resource type="Texture2D" uid="uid://dgbld0ci406ji" path="res://assets/textures/Character_up_idle_no-hands-Sheet6.png" id="5_wyqjk"]
+[ext_resource type="AudioStream" uid="uid://ikp3y6dx2nx1" path="res://assets/audio/556 Single WAV.wav" id="10_1kp85"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_k3r5w"]
 atlas = ExtResource("2_6ct3r")
@@ -406,3 +406,8 @@ shape = SubResource("CircleShape2D_6ct3r")
 
 [node name="ShootSound" type="AudioStreamPlayer2D" parent="." unique_id=653285701]
 stream = ExtResource("10_1kp85")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+enabled = true
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0

@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://b22fio1dbhq52"]
 
-[ext_resource type="Script" uid="uid://b4rd2f8deww70" path="res://enemy_1.gd" id="1_mo1vv"]
-[ext_resource type="Texture2D" uid="uid://biiqy0bvgr5a7" path="res://Zombie_Axe_Side_Walk-Sheet8.png" id="2_cj2mj"]
+[ext_resource type="Script" uid="uid://b4rd2f8deww70" path="res://scripts/gameplay/enemy_1.gd" id="1_mo1vv"]
+[ext_resource type="Texture2D" uid="uid://biiqy0bvgr5a7" path="res://assets/textures/Zombie_Axe_Side_Walk-Sheet8.png" id="2_cj2mj"]
 [ext_resource type="Texture2D" uid="uid://t6u7crl0uk3s" path="res://images/Zombie_Axe_Down_Walk-Sheet8.png" id="2_vw5da"]
 [ext_resource type="Texture2D" uid="uid://dfr2qf5lifpau" path="res://images/Zombie_Axe_Side-left_Walk-Sheet8.png" id="3_2vgp3"]
-[ext_resource type="AudioStream" uid="uid://ikp3y6dx2nx1" path="res://556 Single WAV.wav" id="4_1ct38"]
+[ext_resource type="AudioStream" path="res://assets/audio/zombieattack.mp3" id="4_zatk"]
 [ext_resource type="Texture2D" uid="uid://cgrl1k5r26rvx" path="res://images/Zombie_Axe_Up_Walk-Sheet8.png" id="5_tamnr"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_hwd14"]
@@ -196,7 +196,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"zombie_walkdown",
-"speed": 5.0
+"speed": 8.5
 }, {
 "frames": [{
 "duration": 1.0,
@@ -225,7 +225,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"zombie_walkleft",
-"speed": 5.0
+"speed": 8.5
 }, {
 "frames": [{
 "duration": 1.0,
@@ -278,7 +278,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"zombie_walkright",
-"speed": 5.0
+"speed": 8.5
 }, {
 "frames": [{
 "duration": 1.0,
@@ -307,7 +307,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"zombie_walkup",
-"speed": 5.0
+"speed": 8.5
 }]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_6ct3r"]
@@ -325,8 +325,8 @@ animation = &"zombie_walkup"
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=705092354]
 shape = SubResource("CircleShape2D_6ct3r")
 
-[node name="ShootSound" type="AudioStreamPlayer2D" parent="." unique_id=666928377]
-stream = ExtResource("4_1ct38")
+[node name="AttackSound" type="AudioStreamPlayer2D" parent="." unique_id=666928377]
+stream = ExtResource("4_zatk")
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=940318098]
 path_desired_distance = 4.0

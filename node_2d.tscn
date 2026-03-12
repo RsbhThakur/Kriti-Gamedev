@@ -1,12 +1,12 @@
 [gd_scene format=3 uid="uid://cejtg55otvw7u"]
 
-[ext_resource type="Texture2D" uid="uid://mmdiakq7kfv6" path="res://1773125461950.png" id="1_0e48y"]
-[ext_resource type="Script" uid="uid://qh4vv8rbofqf" path="res://mainmenu.gd" id="1_q6r6c"]
-[ext_resource type="Texture2D" uid="uid://bwf64fgqsqsy" path="res://Buttons-01.png" id="2_epypp"]
-[ext_resource type="AudioStream" uid="uid://byj0dq7ot7rd0" path="res://intro.ogg" id="3_epypp"]
-[ext_resource type="AudioStream" uid="uid://ikp3y6dx2nx1" path="res://556 Single WAV.wav" id="5_d21ai"]
-[ext_resource type="AudioStream" uid="uid://cugciq2qy7sbu" path="res://Semi 22LR Reload Part 1 WAV.wav" id="6_rj586"]
-[ext_resource type="AudioStream" uid="uid://bn5lacb1wcodv" path="res://22LR Single Isolated WAV.wav" id="7_4d7sh"]
+[ext_resource type="Texture2D" uid="uid://mmdiakq7kfv6" path="res://assets/textures/1773125461950.png" id="1_0e48y"]
+[ext_resource type="Script" uid="uid://qh4vv8rbofqf" path="res://scripts/ui/mainmenu.gd" id="1_q6r6c"]
+[ext_resource type="Texture2D" uid="uid://bwf64fgqsqsy" path="res://assets/textures/Buttons-01.png" id="2_epypp"]
+[ext_resource type="AudioStream" uid="uid://byj0dq7ot7rd0" path="res://assets/audio/intro.ogg" id="3_epypp"]
+[ext_resource type="AudioStream" uid="uid://ikp3y6dx2nx1" path="res://assets/audio/556 Single WAV.wav" id="5_d21ai"]
+[ext_resource type="AudioStream" uid="uid://cugciq2qy7sbu" path="res://assets/audio/Semi 22LR Reload Part 1 WAV.wav" id="6_rj586"]
+[ext_resource type="AudioStream" uid="uid://bn5lacb1wcodv" path="res://assets/audio/22LR Single Isolated WAV.wav" id="7_4d7sh"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_epypp"]
 atlas = ExtResource("1_0e48y")
@@ -50,21 +50,31 @@ region = Rect2(792.6028, 2627.303, 307.46118, 311.4541)
 
 [node name="Node2D" type="Control" unique_id=55120967]
 layout_mode = 3
-anchors_preset = 0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="mainmenu" type="Control" parent="." unique_id=1513324335]
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_q6r6c")
 
 [node name="background" type="TextureRect" parent="mainmenu" unique_id=1795743415]
-layout_mode = 0
-offset_right = 1505.8824
-offset_bottom = 847.05884
-scale = Vector2(0.85, 0.85)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 texture = SubResource("AtlasTexture_epypp")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="play" type="TextureButton" parent="mainmenu" unique_id=1447002932]
 layout_mode = 0
@@ -89,15 +99,11 @@ texture_pressed = SubResource("AtlasTexture_4d7sh")
 texture_hover = SubResource("AtlasTexture_rj586")
 
 [node name="sound" type="TextureButton" parent="mainmenu" unique_id=462245928]
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
+layout_mode = 0
 offset_left = 386.0
-offset_top = 291.0
+offset_top = 331.0
 offset_right = 695.0
-offset_bottom = 600.0
-grow_vertical = 0
+offset_bottom = 640.0
 scale = Vector2(0.35, 0.35)
 toggle_mode = true
 action_mode = 0

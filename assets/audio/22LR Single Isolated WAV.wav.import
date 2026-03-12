@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bcwbswuiaw5yl"
+path="res://.godot/imported/22LR Single Isolated WAV.wav-6f176420128b67b5ec8aab36ec49b736.sample"
+
+[deps]
+
+source_file="res://assets/audio/22LR Single Isolated WAV.wav"
+dest_files=["res://.godot/imported/22LR Single Isolated WAV.wav-6f176420128b67b5ec8aab36ec49b736.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2
