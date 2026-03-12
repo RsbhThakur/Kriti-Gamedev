@@ -1,4 +1,4 @@
-# Seen vs. Unseen
+# Blinking Dead
 
 **Team:** KRITI — Low Prep  
 **Event:** GDAI × Tech Meet Game Jam  
@@ -10,7 +10,7 @@
 
 ## Theme Interpretation
 
-In **Seen vs. Unseen**, the only source of visibility is the player's directional torch. Enemies are present on the map at all times but are **completely invisible until they enter the torch cone**. The moment they exit the beam, they vanish. The torch governs every core mechanic — visibility, shooting range, bullet reach, and the existence of the boss — making perception the single central resource.
+In **Blinking Dead**, the only source of visibility is the player's directional torch. Enemies are present on the map at all times but are **completely invisible until they enter the torch cone**. The moment they exit the beam, they vanish. The torch governs every core mechanic — visibility, shooting range, bullet reach, and the existence of the boss — making perception the single central resource.
 
 | System | Seen | Unseen |
 |---|---|---|
@@ -46,7 +46,7 @@ Top-down 2D survival. Survive as long as possible on a fixed walled map.
 ## How to Run
 
 ### Android
-1. Download `seen-vs-unseen-debug.apk` from the submission folder.
+1. Download `blinking-dead-debug.apk` from the submission folder.
 2. Enable **Install from unknown sources** in device settings.
 3. Install and launch. Designed for landscape orientation.
 
