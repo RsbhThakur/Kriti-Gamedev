@@ -75,12 +75,82 @@ func _ready() -> void:
 
 	_build_hud()
 	_build_pause_menu()
+	if not get_viewport().size_changed.is_connected(_on_viewport_resized):
+		get_viewport().size_changed.connect(_on_viewport_resized)
+	_apply_ui_layout()
 	_build_audio_players()
 	_build_newmap()
 	_spawn_hidden_main_enemies()
 	_setup_spawn_timer()
 	spawn_enemy()
 	_update_hud()
+
+
+func _on_viewport_resized() -> void:
+	_apply_ui_layout()
+
+
+func _apply_ui_layout() -> void:
+	var viewport_size = get_viewport_rect().size
+	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
+		return
+
+	var min_dim = min(viewport_size.x, viewport_size.y)
+	var joy_size = clamp(min_dim * 0.22, 180.0, 260.0)
+	var joy_margin = clamp(min_dim * 0.05, 24.0, 72.0)
+
+	move_joystick.anchor_left = 0.0
+	move_joystick.anchor_right = 0.0
+	move_joystick.anchor_top = 1.0
+	move_joystick.anchor_bottom = 1.0
+	move_joystick.offset_left = joy_margin
+	move_joystick.offset_top = -joy_margin - joy_size
+	move_joystick.offset_right = joy_margin + joy_size
+	move_joystick.offset_bottom = -joy_margin
+
+	gun_joystick.anchor_left = 1.0
+	gun_joystick.anchor_right = 1.0
+	gun_joystick.anchor_top = 1.0
+	gun_joystick.anchor_bottom = 1.0
+	gun_joystick.offset_left = -joy_margin - joy_size
+	gun_joystick.offset_top = -joy_margin - joy_size
+	gun_joystick.offset_right = -joy_margin
+	gun_joystick.offset_bottom = -joy_margin
+
+	if pause_button:
+		pause_button.anchor_left = 1.0
+		pause_button.anchor_right = 1.0
+		pause_button.offset_left = -140
+		pause_button.offset_right = -20
+		pause_button.offset_top = 16
+		pause_button.offset_bottom = 60
+
+	if pause_panel:
+		var panel_size = Vector2(
+			clamp(viewport_size.x * 0.30, 320.0, 420.0),
+			clamp(viewport_size.y * 0.48, 300.0, 380.0)
+		)
+		pause_panel.size = panel_size
+		pause_panel.position = (viewport_size - panel_size) * 0.5
+
+		if pause_title_label:
+			pause_title_label.size = Vector2(panel_size.x, 36)
+		if pause_stats_label:
+			pause_stats_label.position = Vector2(24, 62)
+			pause_stats_label.size = Vector2(panel_size.x - 48, 78)
+
+		var button_width = 140.0
+		var button_height = 40.0
+		var button_x = (panel_size.x - button_width) * 0.5
+		if pause_resume_button:
+			pause_resume_button.position = Vector2(button_x, 154)
+			pause_resume_button.size = Vector2(button_width, button_height)
+		if pause_restart_button:
+			pause_restart_button.position = Vector2(button_x, 204)
+			pause_restart_button.size = Vector2(button_width, button_height)
+		if pause_home_button:
+			pause_home_button.position = Vector2(button_x, 254)
+			pause_home_button.size = Vector2(button_width, button_height)
 
 
 func _process(delta: float) -> void:

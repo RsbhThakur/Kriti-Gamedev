@@ -1,6 +1,7 @@
 extends Control
 
 const MASTER_BUS := "Master"
+const MENU_BUTTON_SCALE := 0.35
 var master_bus_index := -1
 var previous_master_volume_db := 0.0
 var play_hitbox: Button
@@ -21,8 +22,10 @@ func _ready():
 	offset_right = 0
 	offset_bottom = 0
 	mouse_filter = Control.MOUSE_FILTER_PASS
+	if not get_viewport().size_changed.is_connected(_on_viewport_resized):
+		get_viewport().size_changed.connect(_on_viewport_resized)
 	_setup_visual_buttons()
-	_setup_button_hitboxes()
+	_apply_menu_layout()
 
 	master_bus_index = AudioServer.get_bus_index(MASTER_BUS)
 	if master_bus_index >= 0:
@@ -31,6 +34,10 @@ func _ready():
 		previous_master_volume_db = AudioServer.get_bus_volume_db(master_bus_index)
 		sound_button.button_pressed = AudioServer.is_bus_mute(master_bus_index)
 	$bgm.play()
+
+
+func _on_viewport_resized() -> void:
+	_apply_menu_layout()
 
 
 func _setup_visual_buttons() -> void:
@@ -42,29 +49,51 @@ func _setup_visual_buttons() -> void:
 	help_button.disabled = false
 	sound_button.disabled = false
 
+	play_button.scale = Vector2(MENU_BUTTON_SCALE, MENU_BUTTON_SCALE)
+	help_button.scale = Vector2(MENU_BUTTON_SCALE, MENU_BUTTON_SCALE)
+	sound_button.scale = Vector2(MENU_BUTTON_SCALE, MENU_BUTTON_SCALE)
+
+
+func _apply_menu_layout() -> void:
+	var viewport_size = get_viewport_rect().size
+	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
+		return
+
+	var play_tex_size = Vector2(308.0, 306.0)
+	var help_tex_size = Vector2(307.0, 308.0)
+	var sound_tex_size = Vector2(309.0, 309.0)
+
+	var play_size = play_tex_size * MENU_BUTTON_SCALE
+	var help_size = help_tex_size * MENU_BUTTON_SCALE
+	var sound_size = sound_tex_size * MENU_BUTTON_SCALE
+
+	var horizontal_gap = clamp(viewport_size.x * 0.03, 20.0, 48.0)
+	var top_y = clamp(viewport_size.y * 0.22, 140.0, 240.0)
+	var bottom_y = top_y + play_size.y + clamp(viewport_size.y * 0.03, 20.0, 40.0)
+	var center_x = viewport_size.x * 0.5
+
 	play_button.anchor_left = 0.0
 	play_button.anchor_top = 0.0
 	play_button.anchor_right = 0.0
 	play_button.anchor_bottom = 0.0
-	play_button.position = Vector2(680.0, 187.0)
-	play_button.size = Vector2(308.0, 306.0)
-	play_button.scale = Vector2(0.35, 0.35)
+	play_button.position = Vector2(center_x - play_size.x * 0.5, top_y)
+	play_button.size = play_tex_size
 
 	help_button.anchor_left = 0.0
 	help_button.anchor_top = 0.0
 	help_button.anchor_right = 0.0
 	help_button.anchor_bottom = 0.0
-	help_button.position = Vector2(847.0, 334.0)
-	help_button.size = Vector2(307.0, 308.0)
-	help_button.scale = Vector2(0.35, 0.35)
+	help_button.position = Vector2(center_x + horizontal_gap * 0.5, bottom_y)
+	help_button.size = help_tex_size
 
 	sound_button.anchor_left = 0.0
 	sound_button.anchor_top = 0.0
 	sound_button.anchor_right = 0.0
 	sound_button.anchor_bottom = 0.0
-	sound_button.position = Vector2(524.0, 331.0)
-	sound_button.size = Vector2(309.0, 309.0)
-	sound_button.scale = Vector2(0.35, 0.35)
+	sound_button.position = Vector2(center_x - sound_size.x - horizontal_gap * 0.5, bottom_y)
+	sound_button.size = sound_tex_size
+
+	_setup_button_hitboxes()
 
 
 func _setup_button_hitboxes() -> void:
