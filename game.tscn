@@ -32,9 +32,9 @@ clampzone_size = 85.0
 joystick_mode = 1
 
 [node name="gun joystick" parent="UI" unique_id=31225157 instance=ExtResource("3_fc0e3")]
-offset_left = 1046.0
+offset_left = 1062.0
 offset_top = -374.0
-offset_right = 1309.0
+offset_right = 1302.0
 offset_bottom = -119.0
 pressed_color = Color(0.9098039, 0.06666667, 0.101960786, 1)
 clampzone_size = 85.0

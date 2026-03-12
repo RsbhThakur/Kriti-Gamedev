@@ -13,7 +13,8 @@ config_version=5
 config/name="Menu1"
 run/main_scene="res://node_2d.tscn"
 config/features=PackedStringArray("4.6", "Mobile")
-config/icon="res://assets/icons/icon.svg"
+boot_splash/image="uid://bbui0wuq8gu6m"
+config/icon="uid://dcxb02hij4hp"
 
 [display]
 

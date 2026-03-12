@@ -59,7 +59,7 @@ func _ready():
 	heavy_growl_player.process_mode = Node.PROCESS_MODE_ALWAYS
 	heavy_growl_player.bus = "Master"
 	add_child(heavy_growl_player)
-
+	
 
 func _physics_process(delta):
 	if player == null or is_frozen:

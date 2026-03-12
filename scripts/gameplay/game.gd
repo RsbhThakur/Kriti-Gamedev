@@ -257,7 +257,7 @@ func _start_life_loss_pause() -> void:
 	health = max_health
 	seconds_since_last_hit = 0.0
 	regen_tick = 0.0
-	player.global_position = map_rect.get_center()
+	player.global_position = map_rect.get_center() -Vector2(450,0)
 	await _reset_enemies_after_life_loss()
 	# Now pause for 3 seconds after respawn
 	await get_tree().create_timer(3.0).timeout
@@ -323,12 +323,12 @@ func _build_newmap() -> void:
 	# World coord = tilemap_pos + tile_coord * tile_size * scale
 	var tm_pos = Vector2(7034.0, 2883.0)
 	var tile_world = 16.0 * 4.0  # 64 px per tile
-	var interior_min = Vector2(tm_pos.x + 15.0 * tile_world, tm_pos.y + 8.0 * tile_world)
-	var interior_max = Vector2(tm_pos.x + 43.0 * tile_world, tm_pos.y + 33.0 * tile_world)
+	var interior_min = Vector2(tm_pos.x + 1.0 * tile_world, tm_pos.y + 1.0 * tile_world)
+	var interior_max = Vector2(tm_pos.x + 70.0 * tile_world, tm_pos.y + 40.0 * tile_world)
 	map_rect = Rect2(interior_min, interior_max - interior_min)
 
 	# Place the player in the centre of the enclosed area
-	player.global_position = map_rect.get_center()
+	player.global_position = map_rect.get_center() -Vector2(450,0)
 
 	# Give the player a callable for ray-wall intersection (torch clipping)
 	player.wall_ray_callable = Callable(self, "_ray_hit_wall_distance")
@@ -339,12 +339,14 @@ func _build_newmap() -> void:
 
 func _build_audio_players() -> void:
 	bgm_player = AudioStreamPlayer.new()
-	bgm_player.stream = load("res://assets/audio/bgm.mp3")
+	bgm_player.stream = load("res://assets/audio/level3.ogg")
 	bgm_player.bus = "Master"
+	bgm_player.volume_db =-2.0
 	bgm_player.autoplay = true
 	bgm_player.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(bgm_player)
 	bgm_player.play()
+	bgm_player.stream.loop=true
 
 	zombie_alert_player = AudioStreamPlayer.new()
 	zombie_alert_player.stream = load("res://assets/audio/zombie.mp3")
@@ -544,7 +546,7 @@ func _build_hud() -> void:
 	hud_root.add_child(pause_button)
 
 	hud_game_over_label = Label.new()
-	hud_game_over_label.position = Vector2(360, 280)
+	hud_game_over_label.position = Vector2(500, 280)
 	hud_game_over_label.size = Vector2(560, 180)
 	hud_game_over_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hud_game_over_label.add_theme_font_size_override("font_size", 34)
@@ -561,7 +563,7 @@ func _build_hud() -> void:
 func _build_pause_menu() -> void:
 	pause_panel = Panel.new()
 	pause_panel.name = "PausePanel"
-	pause_panel.position = Vector2(460, 150)
+	pause_panel.position = Vector2(580, 150)
 	pause_panel.size = Vector2(360, 320)
 	pause_panel.visible = false
 	pause_panel.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
