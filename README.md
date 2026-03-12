@@ -47,7 +47,7 @@ Top-down 2D survival. Survive as long as possible on a fixed walled map.
 ## How to Run
 
 ### Android
-1. Download `blinking-dead-debug.apk` from the submission folder.
+1. Download `blinking-dead.apk` from the root of the repo.
 2. Enable **Install from unknown sources** in device settings.
 3. Install and launch. Designed for landscape orientation.
 
@@ -275,12 +275,12 @@ gamedev/
 | Asset | Description | License |
 |---|---|---|
 | Main menu background | AI-generated image (Google Gemini) | AI-generated, no third-party copyright |
-| Zombie sprite sheets | Pixel art zombie walk cycles (all directions) | Creative Commons |
-| Player character sprites | Pixel art character walk/idle (all directions) | Creative Commons |
-| Tileset / environment | Walls, floors, obstacles | Creative Commons |
-| Gunshot SFX (`.22LR`, `.556` WAV) | Firearm sound effects | Creative Commons |
-| Zombie attack / alert SFX | Melee and growl audio | Creative Commons |
-| Background music (`level3.ogg`) | Gameplay BGM loop | Creative Commons |
+| Zombie sprite sheets | Pixel art zombie walk cycles (all directions) | https://f8studios.itch.io/snakes-authentic-gun-sounds/purchase?initiator=mobile |
+| Player character sprites | Pixel art character walk/idle (all directions) | https://f8studios.itch.io/snakes-authentic-gun-sounds/purchase?initiator=mobile |
+| Tileset / environment | Walls, floors, obstacles | https://f8studios.itch.io/snakes-authentic-gun-sounds/purchase?initiator=mobile |
+| Gunshot SFX (`.22LR`, `.556` WAV) | Firearm sound effects | https://f8studios.itch.io/snakes-authentic-gun-sounds/purchase?initiator=mobile |
+| Zombie attack / alert SFX | Melee and growl audio | https://pixabay.com/sound-effects/search/zombie%20growl/ |
+| Background music (`level3.ogg`) | Gameplay BGM loop | https://opengameart.org/content/stereotypical-90s-space-shooter-music |
 | Virtual Joystick addon | Touch joystick implementation | MIT — © 2025 Kent Coyoca |
 
 The Virtual Joystick MIT `LICENSE` file is preserved at `addons/virtual_joystick/LICENSE` as required.  
