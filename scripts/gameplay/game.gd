@@ -68,6 +68,7 @@ func _ready() -> void:
 
 	health = max_health
 	lives = max_lives
+	world.process_mode = Node.PROCESS_MODE_PAUSABLE
 	player.gun_joystick_path = gun_joystick.get_path()
 	player.movement_joystick_path = move_joystick.get_path()
 	player.set_joysticks(move_joystick, gun_joystick)
@@ -112,6 +113,7 @@ func _process(delta: float) -> void:
 func _setup_spawn_timer() -> void:
 	spawn_timer = Timer.new()
 	spawn_timer.one_shot = true
+	spawn_timer.process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_child(spawn_timer)
 	spawn_timer.timeout.connect(_on_spawn_timeout)
 	_schedule_next_spawn()
@@ -338,6 +340,7 @@ func _build_audio_players() -> void:
 	bgm_player.stream = load("res://assets/audio/bgm.mp3")
 	bgm_player.bus = "Master"
 	bgm_player.autoplay = true
+	bgm_player.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(bgm_player)
 	bgm_player.play()
 
@@ -345,6 +348,7 @@ func _build_audio_players() -> void:
 	zombie_alert_player.stream = load("res://assets/audio/zombie.mp3")
 	zombie_alert_player.bus = "Master"
 	zombie_alert_player.volume_db = -12.0
+	zombie_alert_player.process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_child(zombie_alert_player)
 
 
@@ -497,7 +501,7 @@ func _build_hud() -> void:
 	var hud_root = Control.new()
 	hud_root.name = "HUD"
 	hud_root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	hud_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hud_root.mouse_filter = Control.MOUSE_FILTER_PASS
 	$UI.add_child(hud_root)
 
 	hud_health_bar = ProgressBar.new()
@@ -548,6 +552,7 @@ func _build_hud() -> void:
 	hit_flash = ColorRect.new()
 	hit_flash.set_anchors_preset(Control.PRESET_FULL_RECT)
 	hit_flash.color = Color(1, 0.1, 0.1, 0.0)
+	hit_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hud_root.add_child(hit_flash)
 
 
@@ -622,6 +627,7 @@ func _open_pause_menu() -> void:
 	pause_panel.visible = true
 	if pause_button:
 		pause_button.visible = false
+	_set_game_paused_visual_state(true)
 	get_tree().paused = true
 
 
@@ -634,6 +640,7 @@ func _close_pause_menu() -> void:
 	if pause_button:
 		pause_button.visible = true
 	get_tree().paused = false
+	_set_game_paused_visual_state(false)
 
 
 func _show_game_over_menu() -> void:
@@ -642,7 +649,19 @@ func _show_game_over_menu() -> void:
 	pause_panel.visible = true
 	if pause_button:
 		pause_button.visible = false
+	_set_game_paused_visual_state(true)
 	get_tree().paused = true
+
+
+func _set_game_paused_visual_state(paused: bool) -> void:
+	world.visible = not paused
+	move_joystick.visible = not paused
+	gun_joystick.visible = not paused
+	alert_audio_latched = false
+	if paused and zombie_alert_player:
+		zombie_alert_player.stop()
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		enemy.call("set_frozen", paused)
 
 
 func _refresh_pause_menu(show_game_over: bool) -> void:
