@@ -1,6 +1,6 @@
 # Blinking Dead
 
-**Team:** KRITI — Low Prep  
+**Team:** Hostel-2673 — Low Prep  
 **Event:** GDAI × Tech Meet Game Jam  
 **Theme:** Seen vs. Unseen  
 **Engine:** Godot 4.6.1  
@@ -284,7 +284,7 @@ gamedev/
 | Virtual Joystick addon | Touch joystick implementation | MIT — © 2025 Kent Coyoca |
 
 The Virtual Joystick MIT `LICENSE` file is preserved at `addons/virtual_joystick/LICENSE` as required.  
-All original GDScript code, scene structure, and game design in this repository are original work by the KRITI team.
+All original GDScript code, scene structure, and game design in this repository are original work by the Hostel-2673 team.
 
 ---
 
@@ -303,6 +303,6 @@ All original GDScript code, scene structure, and game design in this repository 
 
 | Member | Role |
 |---|---|
-| KRITI Team | Game Design, Programming, Art Integration, Level Design |
+| Hostel-2673 | Game Design, Programming, Art Integration, Level Design |
 
 *Submitted under the GDAI × Tech Meet — Low Prep track.*
