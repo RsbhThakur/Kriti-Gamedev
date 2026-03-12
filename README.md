@@ -27,13 +27,14 @@ Top-down 2D survival. Survive as long as possible on a fixed walled map.
 
 ### Controls
 
-| Platform | Move | Aim / Shoot | Pause |
-|---|---|---|---|
-| Desktop | `WASD` / Arrow keys | Mouse (aim + auto-fire within cone) | `Esc` |
-| Android | Left virtual joystick | Right virtual joystick | Pause button (top-right HUD) |
+| Action | Input |
+|---|---|
+| Move | Left virtual joystick |
+| Aim / Shoot | Right virtual joystick |
+| Pause | Pause button (top-right HUD) |
 
 ### Core Loop
-- Torch faces movement direction. Gun aims independently via right stick or mouse.
+- Torch faces movement direction. Gun aims independently via the right joystick.
 - Enemies outside the torch cone are invisible — no indicator of their position or count.
 - Small zombies spawn in escalating waves.
 - Boss zombies are scattered across the map, invisible and frozen, activating only when the player enters their `230 px` activation radius.
