@@ -253,12 +253,14 @@ func _start_life_loss_pause() -> void:
 	_clear_all_enemies()
 
 	await get_tree().process_frame
-	await get_tree().create_timer(2.0).timeout
+	# Instant respawn to center
 	health = max_health
 	seconds_since_last_hit = 0.0
 	regen_tick = 0.0
 	player.global_position = map_rect.get_center()
 	await _reset_enemies_after_life_loss()
+	# Now pause for 3 seconds after respawn
+	await get_tree().create_timer(3.0).timeout
 
 	player.set_can_control(true)
 	is_life_loss_pause = false

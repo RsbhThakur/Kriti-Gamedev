@@ -56,6 +56,8 @@ func _ready():
 	heavy_growl_player.stream = load("res://assets/audio/bigzombie.mp3")
 	heavy_growl_player.volume_db = 0
 	heavy_growl_player.max_distance = 1400.0
+	heavy_growl_player.process_mode = Node.PROCESS_MODE_ALWAYS
+	heavy_growl_player.bus = "Master"
 	add_child(heavy_growl_player)
 
 
