@@ -24,17 +24,17 @@ region = Rect2(295.7719, 1211.3594, 311.53204, 310.35254)
 atlas = ExtResource("2_epypp")
 region = Rect2(298.5001, 3069.8364, 311.56528, 305.76367)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_0e48y"]
-atlas = ExtResource("2_epypp")
-region = Rect2(299.00043, 1651, 307.92358, 308.00024)
-
 [sub_resource type="AtlasTexture" id="AtlasTexture_rj586"]
 atlas = ExtResource("2_epypp")
-region = Rect2(1287, 333, 320, 320)
+region = Rect2(1287, 333, 309.70557, 310.92883)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_4d7sh"]
 atlas = ExtResource("2_epypp")
-region = Rect2(1287, 333, 320, 320)
+region = Rect2(1288.471, 331.142, 310.78784, 310.78793)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_x0ka3"]
+atlas = ExtResource("2_epypp")
+region = Rect2(1287, 2190, 310.6316, 307.98682)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_d21ai"]
 atlas = ExtResource("2_epypp")
@@ -91,12 +91,12 @@ texture_hover = SubResource("AtlasTexture_kdubu")
 layout_mode = 0
 offset_left = 760.0
 offset_top = 334.0
-offset_right = 1067.0
-offset_bottom = 642.0
+offset_right = 1069.0
+offset_bottom = 644.0
 scale = Vector2(0.35, 0.35)
-texture_normal = SubResource("AtlasTexture_0e48y")
+texture_normal = SubResource("AtlasTexture_rj586")
 texture_pressed = SubResource("AtlasTexture_4d7sh")
-texture_hover = SubResource("AtlasTexture_rj586")
+texture_hover = SubResource("AtlasTexture_x0ka3")
 
 [node name="sound" type="TextureButton" parent="mainmenu" unique_id=462245928]
 layout_mode = 0

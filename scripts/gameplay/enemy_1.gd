@@ -31,17 +31,10 @@ var difficulty_scale := 1.0
 var is_active := true
 var has_activation_roared := false
 var heavy_growl_player: AudioStreamPlayer2D
-var base_sprite_scale := Vector2.ONE
-var base_collision_radius := 16.0
 
 
 func _ready():
 	current_health = max_health
-	if sprite:
-		base_sprite_scale = sprite.scale
-	var collision_shape: CollisionShape2D = get_node_or_null("CollisionShape2D")
-	if collision_shape and collision_shape.shape is CircleShape2D:
-		base_collision_radius = collision_shape.shape.radius
 	if is_heavy_enemy:
 		is_active = false
 		visible = false
@@ -170,9 +163,6 @@ func try_attack_player() -> void:
 
 func set_player(node: Node2D) -> void:
 	player = node
-	if player:
-		add_collision_exception_with(player)
-		player.add_collision_exception_with(self)
 
 
 func set_seen(seen: bool) -> void:
@@ -199,8 +189,6 @@ func get_is_alerted() -> bool:
 
 func configure_enemy(heavy: bool) -> void:
 	is_heavy_enemy = heavy
-	var collision_shape: CollisionShape2D = get_node_or_null("CollisionShape2D")
-	var nav_agent: NavigationAgent2D = get_node_or_null("NavigationAgent2D")
 	if heavy:
 		max_health = 10
 		current_health = max_health
@@ -211,14 +199,7 @@ func configure_enemy(heavy: bool) -> void:
 		activation_radius = 230.0
 		is_active = false
 		visible = false
-		if sprite:
-			sprite.scale = base_sprite_scale * 4.0
-		if collision_shape and collision_shape.shape is CircleShape2D:
-			collision_shape.shape.radius = base_collision_radius * 4.0
-		if nav_agent:
-			nav_agent.radius = 56.0
-			nav_agent.neighbor_distance = 220.0
-			
+		scale = Vector2(4.0, 4.0)
 	else:
 		max_health = 1
 		current_health = max_health
@@ -228,13 +209,7 @@ func configure_enemy(heavy: bool) -> void:
 		attack_cooldown = 1.35
 		is_active = true
 		visible = true
-		if sprite:
-			sprite.scale = base_sprite_scale
-		if collision_shape and collision_shape.shape is CircleShape2D:
-			collision_shape.shape.radius = base_collision_radius
-		if nav_agent:
-			nav_agent.radius = 14.0
-			nav_agent.neighbor_distance = 140.0
+		scale = Vector2(1.0, 1.0)
 
 
 func can_be_seen() -> bool:

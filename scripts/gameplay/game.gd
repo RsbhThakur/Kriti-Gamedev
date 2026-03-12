@@ -3,13 +3,9 @@ extends Node2D
 @export var enemy_scene: PackedScene = preload("res://Enemy1.tscn")
 @export var max_health := 100
 @export var max_lives := 3
-@export var base_spawn_interval := 1.2
-@export var minimum_spawn_interval := 0.35
-@export var spawn_acceleration := 0.06
-@export var map_scale := 2.0
-@export var wall_thickness := 96.0
-@export var obstacle_count_min := 90
-@export var obstacle_count_max := 140
+@export var base_spawn_interval := 10.0
+@export var minimum_spawn_interval := 3.5
+@export var spawn_acceleration := 0.008
 @export var max_enemies := 22
 @export var hidden_main_enemy_count := 4
 
@@ -28,9 +24,7 @@ var alert_audio_latched := false
 var growl_cooldown := 0.0
 var map_rect: Rect2
 
-var obstacle_textures: Array[Texture2D] = []
-var ground_texture: Texture2D
-var ground_decal_textures: Array[Texture2D] = []
+var newmap_scene: PackedScene = preload("res://newmap.tscn")
 
 var spawn_timer: Timer
 var bgm_player: AudioStreamPlayer
@@ -66,7 +60,6 @@ func _ready() -> void:
 
 	health = max_health
 	lives = max_lives
-	_load_vfx_assets()
 	player.gun_joystick_path = gun_joystick.get_path()
 	player.movement_joystick_path = move_joystick.get_path()
 	player.set_joysticks(move_joystick, gun_joystick)
@@ -74,12 +67,10 @@ func _ready() -> void:
 	_build_hud()
 	_build_pause_menu()
 	_build_audio_players()
-	_build_bounded_map()
+	_build_newmap()
 	_spawn_hidden_main_enemies()
 	_setup_spawn_timer()
-	_spawn_enemy_near_player_front()
-	for _index in range(6):
-		spawn_enemy()
+	spawn_enemy()
 	_update_hud()
 
 
@@ -125,16 +116,12 @@ func _on_spawn_timeout() -> void:
 
 	if get_tree().get_nodes_in_group("enemies").size() < max_enemies:
 		spawn_enemy()
-		if elapsed_time > 20.0 and randf() < 0.55 and get_tree().get_nodes_in_group("enemies").size() < max_enemies:
-			spawn_enemy()
-		if elapsed_time > 60.0 and randf() < 0.4 and get_tree().get_nodes_in_group("enemies").size() < max_enemies:
-			spawn_enemy()
 	_schedule_next_spawn()
 
 
 func _schedule_next_spawn() -> void:
 	var interval = max(minimum_spawn_interval, base_spawn_interval - elapsed_time * spawn_acceleration)
-	interval += randf_range(-0.3, 0.3)
+	interval += randf_range(-0.6, 0.6)
 	interval = max(interval, minimum_spawn_interval)
 	spawn_timer.start(interval)
 
@@ -162,11 +149,6 @@ func spawn_enemy() -> void:
 
 func _register_enemy(enemy: Node) -> void:
 	enemy.add_to_group("enemies")
-	for other_enemy in get_tree().get_nodes_in_group("enemies"):
-		if other_enemy == enemy:
-			continue
-		enemy.add_collision_exception_with(other_enemy)
-		other_enemy.add_collision_exception_with(enemy)
 	enemy.call("set_player", player)
 	enemy.call("set_difficulty_scale", _difficulty_multiplier())
 	if not enemy.is_connected("enemy_attacked_player", _on_enemy_attacked_player):
@@ -177,22 +159,27 @@ func _register_enemy(enemy: Node) -> void:
 
 func _pick_random_spawn_point() -> Vector2:
 	var center = player.global_position
-	var margin = wall_thickness + 36.0
+	var margin = 48.0
 	var min_x = map_rect.position.x + margin
 	var max_x = map_rect.end.x - margin
 	var min_y = map_rect.position.y + margin
 	var max_y = map_rect.end.y - margin
 
-	for _attempt in range(36):
+	for _attempt in range(50):
 		var angle = randf_range(0.0, TAU)
-		var distance = randf_range(170.0, 360.0)
+		var distance = randf_range(280.0, 500.0)
 		var candidate = center + Vector2.RIGHT.rotated(angle) * distance
 		candidate.x = clamp(candidate.x, min_x, max_x)
 		candidate.y = clamp(candidate.y, min_y, max_y)
-		if candidate.distance_to(center) > 140.0 and not _is_position_blocked(candidate):
+		if candidate.distance_to(center) > 200.0 and not _is_position_blocked(candidate):
 			return candidate
 
-	return Vector2(randf_range(min_x, max_x), randf_range(min_y, max_y))
+	# Fallback: still spawn near player, not randomly across entire map
+	var fallback_angle = randf_range(0.0, TAU)
+	var fallback_pos = center + Vector2.RIGHT.rotated(fallback_angle) * 350.0
+	fallback_pos.x = clamp(fallback_pos.x, min_x, max_x)
+	fallback_pos.y = clamp(fallback_pos.y, min_y, max_y)
+	return fallback_pos
 
 
 func _is_position_blocked(pos: Vector2) -> bool:
@@ -210,6 +197,7 @@ func _on_enemy_attacked_player(damage: int) -> void:
 		return
 
 	health -= damage
+	health = max(health, 0)
 	seconds_since_last_hit = 0.0
 	regen_tick = 0.0
 
@@ -267,162 +255,46 @@ func _update_enemy_visibility() -> void:
 
 
 func _update_alert_audio_state() -> void:
+	var has_alert = false
 	var nearest_enemy_distance := INF
 	for enemy in get_tree().get_nodes_in_group("enemies"):
 		nearest_enemy_distance = min(nearest_enemy_distance, enemy.global_position.distance_to(player.global_position))
+		if enemy.call("get_is_alerted"):
+			has_alert = true
 
-	var enemy_is_close = nearest_enemy_distance <= 185.0
+	var enemy_is_close = nearest_enemy_distance <= 320.0
 
-	if enemy_is_close and growl_cooldown <= 0.0:
+	if (has_alert or enemy_is_close) and growl_cooldown <= 0.0:
 		if zombie_alert_player:
 			zombie_alert_player.stop()
 			zombie_alert_player.play()
 		growl_cooldown = 2.8
-	alert_audio_latched = enemy_is_close
+
+	if has_alert or enemy_is_close:
+		alert_audio_latched = true
+	else:
+		alert_audio_latched = false
 
 
-func _build_bounded_map() -> void:
-	for child in ground_layer.get_children():
-		child.queue_free()
-	for child in obstacles_layer.get_children():
-		child.queue_free()
+func _build_newmap() -> void:
+	# Instance the pre-built newmap scene with background, walls, and obstacles
+	var map_instance = newmap_scene.instantiate()
+	ground_layer.add_child(map_instance)
 
-	var viewport_size = get_viewport().get_visible_rect().size
-	map_rect = Rect2(Vector2.ZERO, viewport_size * map_scale)
+	# The TileMap in newmap is at position (-278, -703) with scale (4,4)
+	# Tile size is 16x16. The enclosed walled area is:
+	#   Left wall column X=14, Right wall column X=43 (vertical walls, source 6)
+	#   Top wall row Y=7, Bottom wall row Y=33 (horizontal walls, source 1)
+	# Playable interior: tiles X=15..42, Y=8..32
+	# World coord = tilemap_pos + tile_coord * tile_size * scale
+	var tm_pos = Vector2(-278.0, -703.0)
+	var tile_world = 16.0 * 4.0  # 64 px per tile
+	var interior_min = Vector2(tm_pos.x + 15.0 * tile_world, tm_pos.y + 8.0 * tile_world)
+	var interior_max = Vector2(tm_pos.x + 43.0 * tile_world, tm_pos.y + 33.0 * tile_world)
+	map_rect = Rect2(interior_min, interior_max - interior_min)
+
+	# Place the player in the centre of the enclosed area
 	player.global_position = map_rect.get_center()
-
-	var ground = Sprite2D.new()
-	ground.texture = ground_texture
-	ground.centered = false
-	ground.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	ground.position = map_rect.position
-	ground.scale = Vector2(map_rect.size.x / float(ground_texture.get_width()), map_rect.size.y / float(ground_texture.get_height()))
-	ground_layer.add_child(ground)
-
-	var fog_overlay = ColorRect.new()
-	fog_overlay.position = map_rect.position
-	fog_overlay.size = map_rect.size
-	fog_overlay.color = Color(0.06, 0.13, 0.06, 0.04)
-	ground_layer.add_child(fog_overlay)
-
-	_create_map_walls()
-	_populate_map_obstacles()
-
-
-func _create_map_walls() -> void:
-	var top = Rect2(map_rect.position.x, map_rect.position.y - wall_thickness, map_rect.size.x, wall_thickness)
-	var bottom = Rect2(map_rect.position.x, map_rect.end.y, map_rect.size.x, wall_thickness)
-	var left = Rect2(map_rect.position.x - wall_thickness, map_rect.position.y - wall_thickness, wall_thickness, map_rect.size.y + wall_thickness * 2.0)
-	var right = Rect2(map_rect.end.x, map_rect.position.y - wall_thickness, wall_thickness, map_rect.size.y + wall_thickness * 2.0)
-
-	for wall_rect in [top, bottom, left, right]:
-		var wall = StaticBody2D.new()
-		wall.global_position = wall_rect.position + wall_rect.size * 0.5
-		obstacles_layer.add_child(wall)
-
-		var collision = CollisionShape2D.new()
-		var shape = RectangleShape2D.new()
-		shape.size = wall_rect.size
-		collision.shape = shape
-		wall.add_child(collision)
-
-
-func _populate_map_obstacles() -> void:
-	var rng = RandomNumberGenerator.new()
-	rng.randomize()
-	var count = rng.randi_range(obstacle_count_min, obstacle_count_max)
-	var spawn_margin = wall_thickness + 60.0
-
-	for _index in range(count):
-		var position = Vector2(
-			rng.randf_range(map_rect.position.x + spawn_margin, map_rect.end.x - spawn_margin),
-			rng.randf_range(map_rect.position.y + spawn_margin, map_rect.end.y - spawn_margin)
-		)
-
-		if position.distance_to(player.global_position) < 260.0:
-			continue
-
-		_create_random_obstacle(obstacles_layer, position, rng)
-
-
-func _spawn_enemy_near_player_front() -> void:
-	if enemy_scene == null:
-		return
-
-	var preferred = player.global_position + Vector2(220, 0)
-	var margin = wall_thickness + 36.0
-	preferred.x = clamp(preferred.x, map_rect.position.x + margin, map_rect.end.x - margin)
-	preferred.y = clamp(preferred.y, map_rect.position.y + margin, map_rect.end.y - margin)
-
-	if _is_position_blocked(preferred):
-		preferred = _pick_random_spawn_point()
-
-	var enemy = enemy_scene.instantiate()
-	enemy.global_position = preferred
-	enemies_layer.add_child(enemy)
-	enemy.call("configure_enemy", false)
-	_register_enemy(enemy)
-
-
-func _create_random_obstacle(parent: Node2D, pos: Vector2, rng: RandomNumberGenerator) -> void:
-	var body = StaticBody2D.new()
-	body.global_position = pos
-	parent.add_child(body)
-
-	var type_roll = rng.randi_range(0, 2)
-	var sprite = Sprite2D.new()
-	sprite.texture = obstacle_textures[type_roll]
-	sprite.scale = Vector2.ONE * rng.randf_range(2.4, 3.8)
-	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	body.add_child(sprite)
-
-	var silhouette = Polygon2D.new()
-	silhouette.polygon = PackedVector2Array([
-		Vector2(-22, -22),
-		Vector2(22, -22),
-		Vector2(22, 22),
-		Vector2(-22, 22)
-	])
-	silhouette.color = Color(0.09, 0.23, 0.1, 0.75)
-	silhouette.scale = Vector2.ONE * sprite.scale.x
-	body.add_child(silhouette)
-
-	var collision = CollisionShape2D.new()
-	var shape = CircleShape2D.new()
-	shape.radius = 10.5 * sprite.scale.x
-	collision.shape = shape
-	body.add_child(collision)
-
-
-func _load_vfx_assets() -> void:
-	ground_texture = load("res://images/tile_grass.png")
-	obstacle_textures = [
-		load("res://addons/virtual_joystick/Objects/Nature/Green/Tree_1_Spruce_Green.png"),
-		load("res://addons/virtual_joystick/Objects/Nature/Green/Bush_2_Green.png"),
-		load("res://addons/virtual_joystick/Objects/Nature/Flowers_Mashrooms_Other-nature-stuff/Rocks/Rock_4.png")
-	]
-	ground_decal_textures = [
-		load("res://addons/virtual_joystick/Objects/Nature/Green/Bush_1_Green.png"),
-		load("res://addons/virtual_joystick/Objects/Nature/Green/Bush_2_Green.png")
-	]
-
-
-func _create_ground_decal(parent: Node2D, rng: RandomNumberGenerator) -> void:
-	if ground_decal_textures.is_empty():
-		return
-	if map_rect.size == Vector2.ZERO:
-		return
-
-	var decal = Sprite2D.new()
-	decal.texture = ground_decal_textures[rng.randi_range(0, ground_decal_textures.size() - 1)]
-	decal.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	decal.modulate = Color(1, 1, 1, rng.randf_range(0.18, 0.33))
-	decal.position = Vector2(
-		rng.randf_range(20.0, map_rect.size.x - 20.0),
-		rng.randf_range(20.0, map_rect.size.y - 20.0)
-	)
-	decal.scale = Vector2.ONE * rng.randf_range(0.4, 0.8)
-	parent.add_child(decal)
 
 
 func _build_audio_players() -> void:
@@ -453,7 +325,7 @@ func _spawn_hidden_main_enemies() -> void:
 
 
 func _pick_hidden_main_enemy_spawn() -> Vector2:
-	var margin = wall_thickness + 48.0
+	var margin = 48.0
 	var min_x = map_rect.position.x + margin
 	var max_x = map_rect.end.x - margin
 	var min_y = map_rect.position.y + margin

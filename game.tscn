@@ -14,8 +14,10 @@ script = ExtResource("1_feb5d")
 [node name="Obstacles" type="Node2D" parent="World"]
 
 [node name="Enemies" type="Node2D" parent="World"]
+z_index = 2
 
 [node name="CharacterBody2D" parent="World" instance=ExtResource("2_feb5d")]
+z_index = 2
 position = Vector2(640, 360)
 
 [node name="UI" type="CanvasLayer" parent="."]
